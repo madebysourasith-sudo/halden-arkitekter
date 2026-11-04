@@ -508,16 +508,20 @@ section[data-framer-name="Timeline"],section[data-framer-name="Facts"],section[d
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
 </script>
-<style id="halden-intro">/* ---- Hero intro: pinned stage, wordmark splits to the edges, the film follows the scroll ---- */
-section[data-framer-name="Hero Section"]{height:500vh!important;min-height:0!important;overflow:visible!important;justify-content:flex-start!important;align-content:flex-start!important}
+<style id="halden-intro">/* ---- Hero intro: the film seen through the wordmark; scrolling dives into the "l" and the film runs from the sky back to the plan ---- */
+section[data-framer-name="Hero Section"]{height:520vh!important;min-height:0!important;overflow:visible!important;justify-content:flex-start!important;align-content:flex-start!important}
 section[data-framer-name="Hero Section"]>[data-framer-name="Hero wrapper"]{position:sticky!important;top:0!important;height:100vh!important;min-height:0!important;transform:none!important}
-/* the template grain stays light once the film is in colour */
-[data-framer-name="Hero wrapper"]>.framer-1c01r50-container{opacity:calc(.3 + .7 * var(--i-fade,1))}
-/* the template's own background film is replaced by .i-film */
+/* template grain stays light over the colour film */
+[data-framer-name="Hero wrapper"]>.framer-1c01r50-container{opacity:calc(.3 + .25 * var(--i-fade,1))}
+/* the template's own background film and wordmark are replaced */
 [data-framer-name="Hero wrapper"]>[data-framer-name="Background"] video:not(.i-film){visibility:hidden!important}
+[data-framer-name="Hero wrapper"] [data-framer-name="Glith"]{visibility:hidden!important}
 
-[data-framer-name="Hero wrapper"] video.i-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;will-change:transform,filter;
-  transform:scale(var(--i-zoom,1));filter:grayscale(var(--i-gray,1)) contrast(var(--i-con,1.08)) brightness(var(--i-bri,.62))}
+[data-framer-name="Hero wrapper"] video.i-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:none!important}
+
+/* the knockout: a dark sheet with the word cut out, so the film only shows inside the letters (SVG, redrawn at screen size while zooming) */
+.i-mask{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:var(--i-mo,1);display:block}
+.i-mask text{font-family:"Cal Sans","DM Sans",sans-serif;font-weight:600}
 
 /* everything around the wordmark leaves first */
 [data-framer-name="Hero wrapper"] [data-framer-name="Services"],
@@ -528,12 +532,10 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
 [data-framer-name="Hero wrapper"]>.h-foot{opacity:var(--i-fade,1);transition:none}
 [data-framer-name="Hero wrapper"]>.h-foot{pointer-events:var(--i-pe,auto)}
 
-/* the two halves: the original keeps "hal", the clone carries "den" */
-.i-half{will-change:translate,scale}
-.i-left{clip-path:inset(-20% calc(100% - var(--i-split,43.4%)) -20% -20%);translate:calc(var(--i-dx,0px) * -1) 0;scale:var(--i-s,1);transform-origin:var(--i-split,43.4%) 50%}
-.i-right{position:absolute!important;inset:0;pointer-events:none;opacity:1!important;transform:none!important;clip-path:inset(-20% -20% -20% var(--i-split,43.4%));translate:var(--i-dx,0px) 0;scale:var(--i-s,1);transform-origin:var(--i-split,43.4%) 50%}
+/* keeps the header readable over bright sky once the film fills the screen */
+.i-scrim{position:absolute;left:0;right:0;top:0;height:160px;z-index:5;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.42),transparent);opacity:calc(1 - var(--i-fade,1))}
 
-/* stage captions, in once the wordmark has opened */
+/* stage captions, once we are inside the film */
 .i-steps{position:absolute;left:40px;right:40px;bottom:40px;z-index:6;display:flex;align-items:flex-end;justify-content:space-between;gap:32px;
   font-family:"DM Sans","Inter",system-ui,sans-serif;color:#f4f3ef;opacity:var(--i-cap,0);pointer-events:none}
 .i-steps ol{margin:0;padding:0;list-style:none;display:flex;gap:32px}
@@ -545,12 +547,12 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
 .i-steps::before{content:"";position:absolute;inset:-120px -40px -40px;z-index:-1;background:linear-gradient(to top,rgba(0,0,0,.45),transparent)}
 
 @media (max-width:1199.98px){
-  section[data-framer-name="Hero Section"]{height:460vh!important}
+  section[data-framer-name="Hero Section"]{height:480vh!important}
   .i-steps{left:32px;right:32px}
   .i-steps ol{gap:24px}
 }
 @media (max-width:809.98px){
-  section[data-framer-name="Hero Section"]{height:420vh!important}
+  section[data-framer-name="Hero Section"]{height:440vh!important}
   .i-steps{left:20px;right:20px;bottom:28px;flex-direction:column;align-items:stretch;gap:18px}
   .i-steps ol{justify-content:space-between;gap:12px}
   .i-steps li{font-size:13px}
@@ -559,12 +561,14 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
 </style>
 <script>(function(){
   var DIR = 'neiden-architecture-assets/';
-  var STAGES = [[0, '01', 'The plan'], [1.6, '02', 'The model'], [6, '03', 'Inside'], [19.5, '04', 'The site']];
-  var sec, wrap, film, left, right, steps, items = [], dur = 30.6, target = 0, shown = 0, split = 43.4;
+  // the film runs backwards: from the finished site in the sky down to the plan on the desk
+  var STAGES = [[19.5, '01', 'The site'], [6, '02', 'Inside'], [1.6, '03', 'The model'], [0, '04', 'The plan']];
+  var S_MAX = 70;           // how far the dive into the "l" zooms
+  var sec, wrap, film, mask, word, steps, items = [], dur = 30.6, target = 30.55, shown = 30.55;
 
   function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
-  function ease(t){ return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
   function small(){ return matchMedia('(max-width:809.98px)').matches; }
+  function pad(){ return innerWidth < 810 ? 20 : innerWidth < 1200 ? 32 : 40; }
 
   // the template's own hero film would autoplay underneath; stop it loading
   function silence(){
@@ -575,15 +579,15 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
     });
   }
 
-  function makeFilm(){
-    var bg = wrap.querySelector('[data-framer-name="Background"]'); if (!bg) return;
-    film = bg.querySelector('.i-film');
-    if (film) return;
+  function makeFilm(bg){
+    film = bg.querySelector('.i-film'); if (film) return;
     film = document.createElement('video');
     film.className = 'i-film'; film.muted = true; film.playsInline = true; film.preload = 'auto';
     film.setAttribute('muted', ''); film.setAttribute('playsinline', '');
     film.src = DIR + (small() ? 'v-hg-hero-m.mp4' : 'v-hg-hero.mp4');
-    film.addEventListener('loadedmetadata', function(){ dur = film.duration || dur; film.currentTime = Math.max(.04, shown); });
+    film.addEventListener('loadedmetadata', function(){
+      dur = film.duration || dur; scroll(); shown = target; film.currentTime = Math.max(.04, shown);
+    });
     bg.appendChild(film);
     // over http the whole film is pulled into memory first, so every scroll position can be shown at once
     if (/^https?:/.test(location.protocol) && window.fetch) {
@@ -594,63 +598,79 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
     }
   }
 
-  function makeHalves(){
-    var g = wrap.querySelector('[data-framer-name="Glith"]'); if (!g) return;
-    var box = g.closest('[class*="-container"]') || g;
-    if (box.classList.contains('i-left') && box.parentElement.querySelector('.i-right')) { left = box; right = box.parentElement.querySelector('.i-right'); return; }
-    left = box; left.classList.add('i-half', 'i-left');
-    var old = box.parentElement.querySelector('.i-right'); if (old) old.remove();
-    right = box.cloneNode(true); right.classList.remove('i-left'); right.classList.add('i-right'); right.setAttribute('aria-hidden', 'true');
-    box.parentElement.insertBefore(right, box.nextSibling);
-    measure();
+  var NS = 'http://www.w3.org/2000/svg', txt, grp, rect, ox = 0, oy = 0;
+  function makeMask(bg){
+    mask = bg.querySelector('.i-mask');
+    if (!mask) {
+      mask = document.createElementNS(NS, 'svg'); mask.setAttribute('class', 'i-mask'); mask.setAttribute('aria-hidden', 'true');
+      var id = 'i-cut-' + Math.random().toString(36).slice(2, 7);
+      mask.innerHTML = '<defs><mask id="' + id + '" maskUnits="userSpaceOnUse" x="-50000" y="-50000" width="100000" height="100000">' +
+        '<rect x="-50000" y="-50000" width="100000" height="100000" fill="#fff"/><g class="i-g"><text fill="#000">halden</text></g></mask></defs>' +
+        '<rect class="i-sheet" x="-10" y="-10" width="200%" height="200%" fill="#0d0d0d" mask="url(#' + id + ')"/>';
+      bg.appendChild(mask);
+    }
+    txt = mask.querySelector('text'); grp = mask.querySelector('.i-g'); rect = mask.querySelector('.i-sheet');
+    fit();
   }
-  // split between the "l" and the "d" of the wordmark, as a share of its frame
-  function measure(){
-    if (!left) return;
-    var p = left.querySelector('foreignObject p'), r = left.getBoundingClientRect(); if (!p || !r.width) return;
-    var w = document.createTreeWalker(p, NodeFilter.SHOW_TEXT), t, txt = '', nodes = [];
-    while ((t = w.nextNode())) { nodes.push([t, txt.length]); txt += t.textContent; }
-    var i = txt.toLowerCase().indexOf('den'); if (i < 1) return;
-    var hit = nodes.filter(function(n){ return n[1] <= i && i < n[1] + n[0].textContent.length; })[0]; if (!hit) return;
-    var rg = document.createRange(), o = i - hit[1];
-    rg.setStart(hit[0], o); rg.setEnd(hit[0], o + 1); var d = rg.getBoundingClientRect();
-    rg.setStart(hit[0], Math.max(0, o - 1)); rg.setEnd(hit[0], o); var l = rg.getBoundingClientRect();
-    if (!d.width) return;
-    var x = l.width ? (l.right + d.left) / 2 : d.left;
-    split = Math.max(20, Math.min(80, (x - r.left) / r.width * 100));
-    wrap.style.setProperty('--i-split', split.toFixed(2) + '%');
+
+  // the word spans the page like the template's wordmark, at the same height, in the same type
+  function fit(){
+    if (!txt || !wrap) return;
+    var src = wrap.querySelector('[data-framer-name="Glith"] foreignObject p'), ls = -.04;
+    if (src) {
+      var cs = getComputedStyle(src), f = parseFloat(cs.fontSize), l = parseFloat(cs.letterSpacing);
+      txt.style.fontFamily = cs.fontFamily; txt.style.fontWeight = cs.fontWeight;
+      if (f && !isNaN(l)) ls = l / f;
+    }
+    var wr = wrap.getBoundingClientRect(), W = wr.width, H = wr.height, cy = H * .45;
+    var box = wrap.querySelector('[data-framer-name="Glith"]'); box = box && (box.closest('[class*="-container"]') || box);
+    if (box) { var br = box.getBoundingClientRect(); if (br.height) cy = br.top + br.height / 2 - wr.top; }
+    txt.setAttribute('font-size', 100); txt.style.letterSpacing = (ls * 100) + 'px';
+    txt.setAttribute('x', 0); txt.setAttribute('y', 0);
+    var bb = txt.getBBox(); if (!bb.width) return;
+    // the last letter's tracking hangs past the ink; leave it out of the width
+    var fs = 100 * (W - 2 * pad()) / (bb.width + ls * 100);
+    txt.setAttribute('font-size', fs.toFixed(2)); txt.style.letterSpacing = (ls * fs).toFixed(2) + 'px';
+    bb = txt.getBBox();
+    var x = pad() - bb.x, y = cy - (bb.y + bb.height / 2);
+    // tighter: centre on the cap/x-height ink, not the line box
+    txt.setAttribute('x', x.toFixed(1)); txt.setAttribute('y', (y + bb.height * .06).toFixed(1));
+    // aim the dive at the middle of the "l" stem
+    try { var e = txt.getExtentOfChar(2); ox = e.x + e.width / 2; oy = e.y + e.height * .38; } catch (er) { ox = W * .42; oy = cy; }
+    apply();
   }
+  var zs = 1;
+  function apply(){ if (grp) grp.setAttribute('transform', 'translate(' + ox + ' ' + oy + ') scale(' + zs + ') translate(' + (-ox) + ' ' + (-oy) + ')'); }
 
   function makeSteps(){
     steps = wrap.querySelector('.i-steps'); if (steps) { items = steps.querySelectorAll('li'); return; }
     steps = document.createElement('div'); steps.className = 'i-steps'; steps.setAttribute('aria-hidden', 'true');
     steps.innerHTML = '<ol>' + STAGES.map(function(s){ return '<li><b>' + s[1] + '</b>' + s[2] + '</li>'; }).join('') + '</ol><div class="i-bar"><i></i></div>';
     wrap.appendChild(steps); items = steps.querySelectorAll('li');
+    if (!wrap.querySelector('.i-scrim')) { var sc = document.createElement('div'); sc.className = 'i-scrim'; wrap.appendChild(sc); }
   }
 
   function build(){
     sec = document.querySelector('section[data-framer-name="Hero Section"]');
     wrap = sec && sec.querySelector('[data-framer-name="Hero wrapper"]');
     if (!wrap) return;
-    silence(); makeFilm(); makeHalves(); makeSteps(); scroll();
+    var bg = wrap.querySelector('[data-framer-name="Background"]'); if (!bg) return;
+    silence(); makeFilm(bg); makeMask(bg); makeSteps(); scroll();
   }
 
   function scroll(){
     if (!sec || !wrap) return;
     var vh = innerHeight, r = sec.getBoundingClientRect();
     var p = clamp(-r.top / Math.max(1, sec.offsetHeight - vh));
-    var e = ease(clamp(p / .28)), c = clamp((p - .03) / .22);
+    var z = clamp(p / .3);
     var s = wrap.style;
-    s.setProperty('--i-fade', (1 - clamp(p / .08)).toFixed(3));
-    s.setProperty('--i-pe', p > .04 ? 'none' : 'auto');
-    s.setProperty('--i-dx', (e * innerWidth * .62).toFixed(1) + 'px');
-    s.setProperty('--i-s', (1 + .6 * e).toFixed(4));
-    s.setProperty('--i-zoom', (1 + .06 * e).toFixed(4));
-    s.setProperty('--i-gray', (1 - c).toFixed(3));
-    s.setProperty('--i-bri', (.62 + .38 * c).toFixed(3));
-    s.setProperty('--i-con', (1.08 - .08 * c).toFixed(3));
-    s.setProperty('--i-cap', clamp((p - .22) / .08).toFixed(3));
-    target = clamp((p - .03) / .95) * (dur - .05);
+    s.setProperty('--i-fade', (1 - clamp(p / .06)).toFixed(3));
+    s.setProperty('--i-pe', p > .03 ? 'none' : 'auto');
+    // a dive feels even when the zoom grows exponentially; it starts gently
+    zs = Math.exp(Math.log(S_MAX) * z * z); apply(); s.setProperty('--i-s', zs.toFixed(3));
+    s.setProperty('--i-mo', (1 - clamp((z - .74) / .14)).toFixed(3));
+    s.setProperty('--i-cap', clamp((p - .3) / .06).toFixed(3));
+    target = (1 - clamp(p / .98)) * (dur - .05);
   }
 
   // the film eases towards the scroll position; a new seek waits for the last one
@@ -659,8 +679,8 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
     if (Math.abs(d) > .005) {
       shown += d * .18; if (Math.abs(target - shown) < .005) shown = target;
       if (film && film.readyState >= 1 && !film.seeking) film.currentTime = Math.max(.04, shown);
-      if (wrap) wrap.style.setProperty('--i-p', (shown / dur).toFixed(4));
-      var on = 0; STAGES.forEach(function(st, i){ if (shown >= st[0]) on = i; });
+      if (wrap) wrap.style.setProperty('--i-p', (1 - shown / dur).toFixed(4));
+      var on = STAGES.length - 1; for (var k = 0; k < STAGES.length; k++) if (shown >= STAGES[k][0]) { on = k; break; }
       for (var i = 0; i < items.length; i++) items[i].classList.toggle('on', i === on);
     }
     requestAnimationFrame(tick);
@@ -669,12 +689,13 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
   function start(){
     build();
     addEventListener('scroll', scroll, { passive: true });
-    addEventListener('resize', function(){ measure(); scroll(); });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ measure(); });
+    addEventListener('resize', function(){ fit(); scroll(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    setTimeout(fit, 1500);
     new MutationObserver(function(){
       var w = document.querySelector('section[data-framer-name="Hero Section"] [data-framer-name="Hero wrapper"]');
       if (!w) return;
-      if (w !== wrap || !w.querySelector('.i-film') || !w.querySelector('.i-right') || !w.querySelector('.i-steps')) build();
+      if (w !== wrap || !w.querySelector('.i-film') || !w.querySelector('.i-mask') || !w.querySelector('.i-steps') || !w.querySelector('.i-scrim')) build();
       else silence();
     }).observe(document.body, { childList: true, subtree: true });
     if (items.length) items[0].classList.add('on');
