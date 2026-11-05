@@ -1168,6 +1168,1192 @@ section[data-framer-name^="Strategy"]{height:auto!important;overflow:clip!import
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
 </script>
+<style id="halden-plan3d">/* ---- Plan to house: a pinned Three.js scene after "From sketch to site".
+   The drawing on the floor is cut at 1.20 m, the cut rises until walls and roof stand,
+   the paper model takes its materials, then a section cuts it open. */
+.t3-sec{position:relative;width:100%;flex:none;background:#f2f2f2;color:#0d0d0d;
+  font-family:"DM Sans","Inter",system-ui,sans-serif;--t3-mute:#6b6b68;--t3-faint:#b4b4b0;--t3-line:rgba(13,13,13,.14)}
+.t3-block{position:relative;height:560vh}
+.t3-stick{position:sticky;top:0;height:100vh;overflow:hidden}
+.t3-stick canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
+
+.t3-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,rgba(242,242,242,.94) 0,rgba(242,242,242,.8) 24%,rgba(242,242,242,0) 44%)}
+.t3-head{position:absolute;left:40px;top:120px;z-index:2;max-width:400px;pointer-events:none}
+.t3-head small{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3-mute)}
+.t3-head h2{margin:16px 0 0;font-size:68px;line-height:1.02;font-weight:600;letter-spacing:-.045em}
+.t3-head p{margin:22px 0 0;max-width:340px;font-size:17px;line-height:1.5;color:var(--t3-mute)}
+
+.t3-steps{position:absolute;left:40px;bottom:120px;z-index:2;margin:0;padding:0;list-style:none;width:340px}
+.t3-steps li{border-top:1px solid var(--t3-line);padding:14px 0}
+.t3-steps li:last-child{border-bottom:1px solid var(--t3-line)}
+.t3-steps .t3-top{display:flex;align-items:baseline;gap:18px;color:var(--t3-faint);transition:color .45s ease}
+.t3-steps small{font-size:13px;width:24px}
+.t3-steps b{font-size:22px;line-height:1.1;font-weight:600;letter-spacing:-.03em}
+.t3-steps p{margin:0;padding-left:42px;font-size:15px;line-height:1.5;color:var(--t3-mute);max-height:0;opacity:0;overflow:hidden;
+  transition:max-height .55s cubic-bezier(.2,.7,.2,1),opacity .4s ease,margin .55s cubic-bezier(.2,.7,.2,1)}
+.t3-steps li.on .t3-top{color:#0d0d0d}
+.t3-steps li.on p{max-height:80px;opacity:1;margin-top:8px}
+
+.t3-read{position:absolute;right:40px;bottom:120px;z-index:2;text-align:right;font-variant-numeric:tabular-nums;pointer-events:none}
+.t3-read small{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3-mute)}
+.t3-read b{display:block;margin-top:6px;font-size:30px;font-weight:600;letter-spacing:-.03em}
+
+html.t3-on .framer-1a9wq7r-container{opacity:0!important}
+.t3-read{transition:color .5s ease}
+.t3-read small{transition:color .5s ease}
+.t3-sec.t3-dark .t3-read{color:#fff;text-shadow:0 1px 14px rgba(0,0,0,.35)}
+.t3-sec.t3-dark .t3-read small{color:rgba(255,255,255,.78)}
+
+@media (max-width:1199.98px){
+  .t3-block{height:520vh}
+  .t3-head h2{font-size:52px}
+}
+@media (max-width:809.98px){
+  .t3-block{height:460vh}
+  .t3-head{left:20px;right:20px;top:92px;max-width:none}
+  .t3-head h2{font-size:38px;margin-top:12px}
+  .t3-head p{display:none}
+  .t3-steps{left:20px;right:20px;bottom:104px;width:auto}
+  .t3-scrim{background:linear-gradient(180deg,rgba(242,242,242,.94) 0,rgba(242,242,242,.75) 24%,rgba(242,242,242,0) 40%,rgba(242,242,242,0) 70%,rgba(242,242,242,.8) 82%,rgba(242,242,242,.94) 100%)}
+  .t3-steps li{display:none;border:0!important;padding:0}
+  .t3-steps li.on{display:block}
+  .t3-steps p{padding-left:42px}
+  .t3-read{display:none}
+}
+@media (prefers-reduced-motion:reduce){ .t3-steps p,.t3-steps .t3-top{transition:none} }
+</style>
+<script>(function(){
+  /* Plan to house. One scroll value drives everything:
+     01 the plan draws itself onto the sheet (walls are the real model cut at 1.20 m, seen from above)
+     02 the cut rises and the walls stand, the camera tilts out of plan
+     03 the cut keeps rising through the roof
+     04 the paper model develops into the real house, west to east, and the meadow, rocks and trees come with it
+     05 golden hour: the living wing is cut open along A-A and the lamps come on
+
+     Realism: Poly Haven CC0 materials (colour, normal, roughness) in real-world metres, a real sky (HDR, sun removed)
+     for the ambient light plus a matching sun with soft shadows, screen-space contact shadows, bloom and a film grade.
+     The page paper is never graded: the ground writes how "real" it is into alpha and the finish shows exact paper
+     wherever the drawing still is. */
+  var BASE = 'neiden-architecture-assets/', ASSET = BASE + 'three-r169.js', TB = BASE + 't3/';
+  var STAGES = [
+    { t: 'Plan', c: 'Drawn at 1:100, the sheet the builder works from.', at: 0 },
+    { t: 'Walls', c: 'Cut at hip height, then raised until the rooms stand.', at: .16 },
+    { t: 'Roof', c: 'Two pitched volumes at 40°, joined by a glass entrance.', at: .36 },
+    { t: 'Materials', c: 'Tar-black pine, ribbed steel and oak, set into the meadow.', at: .52 },
+    { t: 'Section', c: 'Cut through the living room at golden hour, to check the light.', at: .72 }
+  ];
+  var sec = null, started = false;
+
+  function buildDom(){
+    var strat = document.querySelector('section[data-framer-name^="Strategy"]');
+    if (!strat) return;
+    if (!sec) {
+      sec = document.createElement('section');
+      sec.className = 't3-sec';
+      sec.setAttribute('aria-label', 'From plan to house');
+      sec.innerHTML = '<div class="t3-block"><div class="t3-stick"><div class="t3-scrim"></div>' +
+        '<div class="t3-head"><small>Hus Fjordlys · Telemark</small><h2>Before the first stone.</h2>' +
+          '<p>Scroll through one of our houses, from the drawing we hand the builder to the section we use to check the light.</p></div>' +
+        '<ol class="t3-steps">' + STAGES.map(function(s, i){
+          return '<li' + (i ? '' : ' class="on"') + '><div class="t3-top"><small>0' + (i + 1) + '</small><b>' + s.t + '</b></div><p>' + s.c + '</p></li>';
+        }).join('') + '</ol>' +
+        '<div class="t3-read"><small>Cut height</small><b>1.20 m</b></div>' +
+      '</div></div>';
+    }
+    if (!sec.isConnected || sec.previousElementSibling !== strat) strat.parentNode.insertBefore(sec, strat.nextSibling);
+    if (!started) watch();
+  }
+
+  function watch(){
+    started = true;
+    var io = new IntersectionObserver(function(es){
+      if (!es.some(function(e){ return e.isIntersecting; })) return;
+      io.disconnect();
+      if (window.THREE && window.RoomEnvironment) return init();
+      var s = document.createElement('script'); s.src = ASSET; s.onload = init; document.head.appendChild(s);
+    }, { rootMargin: '150% 0px' });
+    io.observe(sec);
+  }
+
+  /* ---------- helpers ---------- */
+  var clamp = function(x, a, b){ return x < a ? a : x > b ? b : x; };
+  var seg = function(p, a, b){ return clamp((p - a) / (b - a), 0, 1); };
+  var ease = function(t){ return t * t * (3 - 2 * t); };
+  var easeIO = function(t){ return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+  var lerp = function(a, b, t){ return a + (b - a) * t; };
+  function mono(xs, ys){            // monotone cubic through the keys: smooth, never overshoots
+    var n = xs.length, d = [], m = [], i;
+    for (i = 0; i < n - 1; i++) d[i] = (ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]);
+    m[0] = d[0]; m[n - 1] = d[n - 2];
+    for (i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+    for (i = 0; i < n - 1; i++) {
+      if (d[i] === 0) { m[i] = m[i + 1] = 0; continue; }
+      var a = m[i] / d[i], b = m[i + 1] / d[i], s = a * a + b * b;
+      if (s > 9) { var t = 3 / Math.sqrt(s); m[i] = t * a * d[i]; m[i + 1] = t * b * d[i]; }
+    }
+    return function(x){
+      if (x <= xs[0]) return ys[0];
+      if (x >= xs[n - 1]) return ys[n - 1];
+      var k = 0; while (x > xs[k + 1]) k++;
+      var h = xs[k + 1] - xs[k], t = (x - xs[k]) / h, t2 = t * t, t3 = t2 * t;
+      return (2 * t3 - 3 * t2 + 1) * ys[k] + (t3 - 2 * t2 + t) * h * m[k] + (-2 * t3 + 3 * t2) * ys[k + 1] + (t3 - t2) * h * m[k + 1];
+    };
+  }
+  function rng(seed){ var a = (seed * 2654435761) >>> 0; return function(){ a = (a + 0x6d2b79f5) >>> 0; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+  /* ---------- the house, in plan metres: x east, z south, y up ---------- */
+  var CX = 8.75, CZ = 10;                        // world = plan - C
+  var PX0 = -7, PZ0 = -6, PS = 32;               // the drawn sheet
+  var D2R = Math.PI / 180, TAN = Math.tan(40 * D2R), COS = Math.cos(40 * D2R);
+  var RA = 3.0 + 3.65 * TAN, RB = 2.8 + 3.4 * TAN;   // ridge heights
+  var SECZ = 5.6;                                // section A-A, along the living wing
+  var BIRCH = [[-4.5, -3.0, 1.0], [-6.8, 4.5, 1.1], [-5.6, 13.6, .95], [7.5, -5.4, .9], [21.0, -2.2, 1.05], [23.2, 13.6, 1.1],
+    [20.4, 23.4, .95], [12.6, 24.6, 1.0], [-9.4, 18.0, 1.0], [-3.6, -8.5, 1.15], [-12.5, 6.5, .9], [26.5, 4.0, .85]];
+  var ROOMS = [['Living', '38 m²', 2.4, 1.9], ['Kitchen · Dining', '31 m²', 8.4, 5.9], ['Pantry', '', 11.25, 1.2, 1], ['Utility', '', 13.5, 1.7, 1], ['Hall', '', 12.7, 5.3, 1],
+    ['Entrance', '6 m²', 13.5, 8.0], ['Bath', '9 m²', 16.1, 11.4], ['Bedroom', '24 m²', 13.0, 11.2], ['Main bedroom', '29 m²', 13.0, 17.6], ['Terrace', '48 m²', 6.6, 11.4]];
+  // furniture footprints (plan): what the drawing shows and the model builds
+  var PLANF = { rect: [[3.75, 4.65, 2.6, 5.0], [1.2, 3.5, 2.7, 5.1], [2.05, 2.85, 3.5, 4.3], [5.6, 7.8, 3.6, 4.6], [6.0, 10.3, .15, .8], [7.0, 9.6, 2.0, 2.9],
+      [2.5, 4.9, .2, .72], [11.3, 12.9, 12.6, 14.7], [15.0, 17.2, 16.2, 18.2], [15.6, 17.25, 9.55, 10.45]],
+    small: [[5.75, 6.2, 3.1, 3.5], [6.5, 6.95, 3.1, 3.5], [7.25, 7.7, 3.1, 3.5], [5.75, 6.2, 4.7, 5.1], [6.5, 6.95, 4.7, 5.1], [7.25, 7.7, 4.7, 5.1],
+      [.65, 1.45, 2.5, 3.3], [.65, 1.45, 4.5, 5.3], [11.45, 12.75, 14.15, 14.55], [15.35, 16.85, 16.35, 16.75]] };
+
+  function drawPlan(){
+    var S = 64, cv = document.createElement('canvas'); cv.width = cv.height = PS * S;
+    var g = cv.getContext('2d');
+    var X = function(x){ return (x - PX0) * S; }, Y = function(z){ return (z - PZ0) * S; };
+    var ink = function(a){ return 'rgba(18,18,17,' + a + ')'; };
+    var i, x, z;
+    g.lineCap = 'round';
+    for (i = 0; i <= PS; i++) {
+      g.strokeStyle = ink(i % 5 === 2 ? .085 : .04); g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(i * S, 0); g.lineTo(i * S, PS * S); g.stroke();
+      g.beginPath(); g.moveTo(0, i * S); g.lineTo(PS * S, i * S); g.stroke();
+    }
+    g.strokeStyle = ink(.16); g.lineWidth = 1.2;
+    for (z = 7.29; z < 12.2; z += .14) { g.beginPath(); g.moveTo(X(0), Y(z)); g.lineTo(X(10.8), Y(z)); g.stroke(); }
+    g.strokeStyle = ink(.6); g.lineWidth = 2.2; g.strokeRect(X(0), Y(7.15), 10.8 * S, 5.05 * S);
+    g.strokeStyle = ink(.45); g.lineWidth = 2; g.setLineDash([10, 8]);
+    g.beginPath(); g.moveTo(X(15.15), Y(7.3)); g.lineTo(X(25), Y(7.3)); g.moveTo(X(15.15), Y(8.7)); g.lineTo(X(25), Y(8.7)); g.stroke();
+    g.setLineDash([]);
+    var r = function(n){ n = Math.sin(n * 127.1) * 43758.5; return n - Math.floor(n); };
+    g.fillStyle = ink(.28);
+    for (i = 0; i < 520; i++) { x = 15.3 + r(i) * 9.7; z = 7.4 + r(i + 999) * 1.2; g.beginPath(); g.arc(X(x), Y(z), 1.6 + r(i + 7) * 1.4, 0, 6.283); g.fill(); }
+    g.strokeStyle = ink(.55); g.lineWidth = 2;
+    PLANF.rect.forEach(function(f){ g.strokeRect(X(f[0]), Y(f[2]), (f[1] - f[0]) * S, (f[3] - f[2]) * S); });
+    g.strokeStyle = ink(.38); g.lineWidth = 1.5;
+    PLANF.small.forEach(function(f){ g.strokeRect(X(f[0]), Y(f[2]), (f[1] - f[0]) * S, (f[3] - f[2]) * S); });
+    g.lineWidth = 2; g.strokeStyle = ink(.55); g.beginPath(); g.arc(X(.9), Y(.9), .3 * S, 0, 6.283); g.stroke();
+    g.strokeStyle = ink(.5); g.lineWidth = 1.8;
+    [[12, 1.2, .9, 0, Math.PI / 2], [12.6, 3.4, .9, 0, Math.PI / 2], [14.8, 12.4, .8, Math.PI, Math.PI * 1.5], [13.6, 15.2, .9, 0, Math.PI / 2], [15, 7.4, 1.2, Math.PI / 2, Math.PI]].forEach(function(d){
+      g.setLineDash([6, 6]); g.beginPath(); g.arc(X(d[0]), Y(d[1]), d[2] * S, d[3], d[4]); g.stroke(); g.setLineDash([]);
+      g.beginPath(); g.moveTo(X(d[0]), Y(d[1])); g.lineTo(X(d[0]) + Math.cos(d[4]) * d[2] * S, Y(d[1]) + Math.sin(d[4]) * d[2] * S); g.stroke();
+    });
+    BIRCH.forEach(function(t){
+      if (t[0] < PX0 + 1 || t[0] > PX0 + PS - 1 || t[1] < PZ0 + 1 || t[1] > PZ0 + PS - 1) return;
+      var R = 1.7 * t[2] * S, cx = X(t[0]), cy = Y(t[1]);
+      g.strokeStyle = ink(.38); g.lineWidth = 1.8; g.beginPath(); g.arc(cx, cy, R, 0, 6.283); g.stroke();
+      g.lineWidth = 1.4; g.beginPath();
+      for (var k = 0; k < 7; k++) { var a = k * .8976 + t[0]; g.moveTo(cx + Math.cos(a) * R * .25, cy + Math.sin(a) * R * .25); g.lineTo(cx + Math.cos(a) * R * .7, cy + Math.sin(a) * R * .7); }
+      g.stroke(); g.fillStyle = ink(.5); g.beginPath(); g.arc(cx, cy, 4, 0, 6.283); g.fill();
+    });
+    g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    ROOMS.forEach(function(rm){
+      g.fillStyle = ink(.82); g.font = '600 ' + (rm[4] ? 17 : 24) + 'px "DM Sans"';
+      if (g.letterSpacing !== undefined) g.letterSpacing = '2px';
+      g.fillText(rm[0].toUpperCase(), X(rm[2]), Y(rm[3]));
+      if (rm[1]) { g.fillStyle = ink(.5); g.font = '400 19px "DM Sans"'; if (g.letterSpacing !== undefined) g.letterSpacing = '0px'; g.fillText(rm[1], X(rm[2]), Y(rm[3]) + 26); }
+    });
+    if (g.letterSpacing !== undefined) g.letterSpacing = '0px';
+    function dim(x0, z0, x1, z1, label, off){
+      var vert = x0 === x1, tk = 7;
+      g.strokeStyle = ink(.6); g.lineWidth = 1.6; g.beginPath(); g.moveTo(X(x0), Y(z0)); g.lineTo(X(x1), Y(z1)); g.stroke();
+      [[x0, z0], [x1, z1]].forEach(function(p){
+        g.beginPath(); g.moveTo(X(p[0]) - tk, Y(p[1]) + tk); g.lineTo(X(p[0]) + tk, Y(p[1]) - tk); g.stroke();
+        g.strokeStyle = ink(.25); g.beginPath();
+        if (vert) { g.moveTo(X(p[0]) - off * S, Y(p[1])); g.lineTo(X(p[0]) + 10, Y(p[1])); } else { g.moveTo(X(p[0]), Y(p[1]) - off * S); g.lineTo(X(p[0]), Y(p[1]) + 10); }
+        g.stroke(); g.strokeStyle = ink(.6);
+      });
+      g.fillStyle = ink(.7); g.font = '400 19px "DM Sans"';
+      g.save(); g.translate(X((x0 + x1) / 2), Y((z0 + z1) / 2)); if (vert) g.rotate(-Math.PI / 2); g.fillText(label, 0, -10); g.restore();
+    }
+    dim(-.15, -2.3, 15.15, -2.3, '15 300', -2.0);
+    dim(-.15, -1.5, 4.2, -1.5, '4 350', -1.2); dim(4.2, -1.5, 15.15, -1.5, '10 950', -1.2);
+    dim(-2.3, -.15, -2.3, 7.15, '7 300', -2.0);
+    dim(19.4, 8.85, 19.4, 20.15, '11 300', 1.75);
+    dim(10.85, 22.0, 17.65, 22.0, '6 800', 1.85);
+    // section mark A-A along the living wing (it is where the scroll ends), looking north
+    [-4.6, 18.4].forEach(function(x){
+      g.strokeStyle = ink(.75); g.lineWidth = 2.4; g.setLineDash([16, 6, 3, 6]);
+      g.beginPath(); g.moveTo(X(x < 0 ? x + .6 : x - .6), Y(SECZ)); g.lineTo(X(x < 0 ? -.8 : 15.9), Y(SECZ)); g.stroke(); g.setLineDash([]);
+      g.lineWidth = 2; g.beginPath(); g.arc(X(x), Y(SECZ), .42 * S, 0, 6.283); g.stroke();
+      g.fillStyle = ink(.85); g.beginPath(); g.moveTo(X(x) - .42 * S, Y(SECZ) - .42 * S); g.lineTo(X(x), Y(SECZ) - .95 * S); g.lineTo(X(x) + .42 * S, Y(SECZ) - .42 * S); g.fill();
+      g.font = '600 24px "DM Sans"'; g.textBaseline = 'middle'; g.fillText('A', X(x), Y(SECZ) + 1); g.textBaseline = 'alphabetic';
+    });
+    g.strokeStyle = ink(.7); g.lineWidth = 2; g.beginPath(); g.arc(X(22.6), Y(-3.4), .7 * S, 0, 6.283); g.stroke();
+    g.fillStyle = ink(.85); g.beginPath(); g.moveTo(X(22.6), Y(-4.0)); g.lineTo(X(22.85), Y(-3.0)); g.lineTo(X(22.6), Y(-3.2)); g.lineTo(X(22.35), Y(-3.0)); g.fill();
+    g.font = '600 20px "DM Sans"'; g.fillText('N', X(22.6), Y(-4.35));
+    g.textAlign = 'left'; g.fillStyle = ink(.86); g.font = '600 34px "DM Sans"'; g.fillText('HUS FJORDLYS', X(19.3), Y(23.4));
+    g.fillStyle = ink(.55); g.font = '400 20px "DM Sans"'; g.fillText('Ground floor · 1:100 · Halden Arkitekter', X(19.3), Y(23.4) + 32);
+    return cv;
+  }
+
+  /* ---------- painted foliage (alpha cards) ---------- */
+  function paintSpruce(){
+    var c = document.createElement('canvas'); c.width = 512; c.height = 256; var g = c.getContext('2d'), r = rng(11), i, k;
+    g.lineCap = 'round';
+    var stem = function(t){ return [10 + t * 490, 128 + Math.sin(t * 2.2) * 6 - t * t * 10]; };
+    for (i = 0; i < 46; i++) {                 // side twigs, both sides, shorter toward the tip
+      var t = .04 + i / 46 * .9, b = stem(t), side = i % 2 ? 1 : -1, L = (1 - t) * 105 + 22, a = side * (.7 + r() * .35);
+      var ex = b[0] + Math.cos(a) * L * .55 + L * .45, ey = b[1] + Math.sin(a) * L;
+      for (k = 0; k < 26; k++) {               // needles along the twig
+        var u = k / 26, px = lerp(b[0], ex, u), py = lerp(b[1], ey, u), nl = 7 + r() * 5, na = Math.atan2(ey - b[1], ex - b[0]) + (k % 2 ? 1 : -1) * (.9 + r() * .4);
+        var light = u > .78 && r() < .55;
+        g.strokeStyle = light ? 'hsl(' + (88 + r() * 14) + ',42%,' + (36 + r() * 10) + '%)' : 'hsl(' + (138 + r() * 22) + ',' + (26 + r() * 16) + '%,' + (11 + r() * 13) + '%)';
+        g.lineWidth = 2.2; g.beginPath(); g.moveTo(px, py); g.lineTo(px + Math.cos(na) * nl, py + Math.sin(na) * nl); g.stroke();
+      }
+      g.strokeStyle = 'rgba(60,44,30,.9)'; g.lineWidth = 2; g.beginPath(); g.moveTo(b[0], b[1]); g.lineTo(ex, ey); g.stroke();
+    }
+    g.strokeStyle = '#4a3828'; g.lineWidth = 5; g.beginPath(); for (i = 0; i <= 20; i++) { var s = stem(i / 20); if (i) g.lineTo(s[0], s[1]); else g.moveTo(s[0], s[1]); } g.stroke();
+    return c;
+  }
+  function paintBirch(){
+    var c = document.createElement('canvas'); c.width = c.height = 512; var g = c.getContext('2d'), r = rng(23), i, k;
+    for (i = 0; i < 17; i++) {                 // hanging twigs with small leaves
+      var x0 = 40 + r() * 430, sway = (r() - .5) * 120, len = 300 + r() * 180, pts = [];
+      for (k = 0; k <= 30; k++) { var t = k / 30; pts.push([x0 + sway * t * t + Math.sin(t * 5 + i) * 12, 10 + t * len]); }
+      g.strokeStyle = 'rgba(70,52,40,.85)'; g.lineWidth = 1.6; g.beginPath(); pts.forEach(function(p, j){ if (j) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); }); g.stroke();
+      for (k = 2; k < 30; k++) {
+        var p = pts[k], q = pts[k + 1] || p, dir = Math.atan2(q[1] - p[1], q[0] - p[0]);
+        for (var s = 0; s < 2; s++) {
+          var a = dir + (s ? 1 : -1) * (.5 + r() * .7), d = 6 + r() * 5, lx = p[0] + Math.cos(a) * d, ly = p[1] + Math.sin(a) * d, sz = 12 + r() * 10;
+          var hue = 62 + r() * 30, lit = 22 + r() * 22 + (r() < .12 ? 12 : 0);
+          g.fillStyle = 'hsl(' + hue + ',' + (22 + r() * 18) + '%,' + lit + '%)';
+          g.save(); g.translate(lx, ly); g.rotate(a); g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(sz * .55, -sz * .5, sz, 0); g.quadraticCurveTo(sz * .55, sz * .5, 0, 0); g.fill(); g.restore();
+        }
+      }
+    }
+    return c;
+  }
+  function paintGrass(){
+    var c = document.createElement('canvas'); c.width = 512; c.height = 256; var g = c.getContext('2d'), r = rng(5), i;
+    for (var half = 0; half < 2; half++) {
+      var ox = half * 256;
+      for (i = 0; i < 120; i++) {
+        var bx = ox + 128 + (r() - .5) * 90, h = 110 + r() * 140, lean = (r() - .5) * 120, w = 2 + r() * 3;
+        var dry = r() < .32, hue = dry ? 44 + r() * 10 : 62 + r() * 26;
+        g.fillStyle = 'hsl(' + hue + ',' + (dry ? 30 : 22 + r() * 16) + '%,' + (dry ? 54 + r() * 12 : 32 + r() * 18) + '%)';
+        g.beginPath(); g.moveTo(bx - w, 256); g.quadraticCurveTo(bx + lean * .3, 256 - h * .6, bx + lean, 256 - h); g.quadraticCurveTo(bx + lean * .3 + w * .4, 256 - h * .6, bx + w, 256); g.fill();
+      }
+      if (half) for (i = 0; i < 7; i++) {         // oxeye daisies
+        var fx = ox + 70 + r() * 116, fy = 30 + r() * 90;
+        g.strokeStyle = 'hsl(90,30%,30%)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + (r() - .5) * 20, 256); g.stroke();
+        g.fillStyle = '#f4f2ea'; for (var k = 0; k < 12; k++) { var a = k / 12 * 6.283; g.beginPath(); g.ellipse(fx + Math.cos(a) * 6, fy + Math.sin(a) * 3.2, 5, 1.8, a, 0, 6.283); g.fill(); }
+        g.fillStyle = '#d9a72a'; g.beginPath(); g.arc(fx, fy, 3, 0, 6.283); g.fill();
+      }
+    }
+    return c;
+  }
+  function paintBirchBark(){
+    var c = document.createElement('canvas'); c.width = 128; c.height = 512; var g = c.getContext('2d'), r = rng(31), i;
+    g.fillStyle = '#e9e6de'; g.fillRect(0, 0, 128, 512);
+    for (i = 0; i < 260; i++) { g.fillStyle = 'rgba(' + (r() < .5 ? '170,165,155' : '255,255,250') + ',' + (.15 + r() * .3) + ')'; g.fillRect(r() * 128, r() * 512, 4 + r() * 30, 1 + r() * 3); }
+    for (i = 0; i < 70; i++) { g.fillStyle = 'rgba(25,22,20,' + (.55 + r() * .4) + ')'; var w = 6 + r() * 34, x = r() * 128, y = r() * 440; g.fillRect(x, y, w, 1.5 + r() * 3.5); if (x + w > 128) g.fillRect(x - 128, y, w, 2); }
+    var gr = g.createLinearGradient(0, 400, 0, 512); gr.addColorStop(0, 'rgba(30,26,22,0)'); gr.addColorStop(.45, 'rgba(30,26,22,.75)'); gr.addColorStop(1, 'rgba(25,22,19,.95)');
+    g.fillStyle = gr; g.fillRect(0, 400, 128, 112);
+    return c;
+  }
+
+  /* ---------- tiny loaders: GLB (no extensions) and Radiance HDR ---------- */
+  function parseGLB(T, buf){
+    var dv = new DataView(buf), jl = dv.getUint32(12, true);
+    var J = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, jl))), B0 = 20 + jl + 8;
+    function acc(i){
+      var a = J.accessors[i], bv = J.bufferViews[a.bufferView], nc = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 }[a.type];
+      var C = { 5126: Float32Array, 5123: Uint16Array, 5125: Uint32Array, 5121: Uint8Array }[a.componentType];
+      var off = B0 + (bv.byteOffset || 0) + (a.byteOffset || 0);
+      return new C(buf.slice(off, off + a.count * nc * C.BYTES_PER_ELEMENT));
+    }
+    return Promise.all((J.images || []).map(function(im){
+      var bv = J.bufferViews[im.bufferView];
+      return createImageBitmap(new Blob([new Uint8Array(buf, B0 + (bv.byteOffset || 0), bv.byteLength)], { type: im.mimeType }));
+    })).then(function(bm){
+      var tex = (J.textures || []).map(function(t){ var x = new T.Texture(bm[t.source]); x.flipY = false; x.wrapS = x.wrapT = T.RepeatWrapping; x.needsUpdate = true; return x; });
+      var mats = (J.materials || []).map(function(m){
+        var p = m.pbrMetallicRoughness || {}, bc = p.baseColorFactor || [1, 1, 1, 1];
+        var mt = new T.MeshStandardMaterial({ color: new T.Color(bc[0], bc[1], bc[2]), metalness: p.metallicFactor === undefined ? 1 : p.metallicFactor,
+          roughness: p.roughnessFactor === undefined ? 1 : p.roughnessFactor, side: m.doubleSided ? T.DoubleSide : T.FrontSide });
+        if (p.baseColorTexture) { mt.map = tex[p.baseColorTexture.index]; mt.map.colorSpace = T.SRGBColorSpace; }
+        if (p.metallicRoughnessTexture) { mt.roughnessMap = mt.metalnessMap = tex[p.metallicRoughnessTexture.index]; }
+        if (m.normalTexture) { mt.normalMap = tex[m.normalTexture.index]; mt.normalScale.set(1, -1); }
+        mt.name = m.name || '';
+        return mt;
+      });
+      var out = {};
+      J.nodes.forEach(function(nd){
+        if (nd.mesh === undefined) return;
+        var grp = new T.Group(); grp.name = nd.name; grp.userData.t = nd.translation || [0, 0, 0];
+        J.meshes[nd.mesh].primitives.forEach(function(pr){
+          var geo = new T.BufferGeometry(), at = pr.attributes;
+          geo.setAttribute('position', new T.BufferAttribute(acc(at.POSITION), 3));
+          if (at.NORMAL !== undefined) geo.setAttribute('normal', new T.BufferAttribute(acc(at.NORMAL), 3));
+          if (at.TEXCOORD_0 !== undefined) geo.setAttribute('uv', new T.BufferAttribute(acc(at.TEXCOORD_0), 2));
+          if (pr.indices !== undefined) geo.setIndex(new T.BufferAttribute(acc(pr.indices), 1));
+          grp.add(new T.Mesh(geo, mats[pr.material || 0]));
+        });
+        out[nd.name] = grp;
+      });
+      return out;
+    });
+  }
+  function parseHDR(T, buf, cap){
+    var u = new Uint8Array(buf), p = 0;
+    function line(){ var s = ''; while (p < u.length && u[p] !== 10) s += String.fromCharCode(u[p++]); p++; return s; }
+    while (line() !== '') {}
+    var res = line().split(' '), H = +res[1], W = +res[3];
+    var data = new Uint16Array(W * H * 4), sc = new Uint8Array(W * 4), half = T.DataUtils.toHalfFloat, one = half(1);
+    for (var y = 0; y < H; y++) {
+      var x, c, n, v;
+      if (u[p] === 2 && u[p + 1] === 2) {
+        p += 4;
+        for (c = 0; c < 4; c++) { x = 0; while (x < W) { n = u[p++]; if (n > 128) { n -= 128; v = u[p++]; while (n--) sc[(x++) * 4 + c] = v; } else { while (n--) sc[(x++) * 4 + c] = u[p++]; } } }
+      } else { for (x = 0; x < W * 4; x++) sc[x] = u[p++]; }
+      var row = (H - 1 - y) * W;
+      for (x = 0; x < W; x++) {
+        var e = sc[x * 4 + 3], f = e ? Math.pow(2, e - 136) : 0, R = sc[x * 4] * f, G = sc[x * 4 + 1] * f, B = sc[x * 4 + 2] * f;
+        var L = .2126 * R + .7152 * G + .0722 * B; if (L > cap) { f = cap / L; R *= f; G *= f; B *= f; }      // the sun is our DirectionalLight
+        var o = (row + x) * 4; data[o] = half(R); data[o + 1] = half(G); data[o + 2] = half(B); data[o + 3] = one;
+      }
+    }
+    var t = new T.DataTexture(data, W, H, T.RGBAFormat, T.HalfFloatType);
+    t.mapping = T.EquirectangularReflectionMapping; t.colorSpace = T.LinearSRGBColorSpace; t.magFilter = t.minFilter = T.LinearFilter; t.needsUpdate = true;
+    return t;
+  }
+
+  /* ---------- the scene ---------- */
+  function init(){
+    var T = window.THREE, stick = sec.querySelector('.t3-stick'), small = innerWidth < 810;
+    var renderer = new T.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+    renderer.setClearColor(0xf2f2f2, 1);
+    renderer.localClippingEnabled = true;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false;
+    stick.insertBefore(renderer.domElement, stick.firstChild);
+    renderer.domElement.setAttribute('aria-hidden', 'true');
+    var aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+
+    var scene = new T.Scene();
+    var camera = new T.PerspectiveCamera(30, 1, 1, 800);
+    var cutPlane = new T.Plane(new T.Vector3(0, -1, 0), 1.2), CLIP = [cutPlane];   // keeps y < cut
+    var lin = function(h){ return new T.Color(h); };              // hex is sRGB; Color holds linear
+    var srgbV = function(h){ var c = new T.Color(h); return new T.Vector3(c.r, c.g, c.b); };
+    var U = { uWipe: { value: -10 }, uFront: { value: -30 }, uIsl: { value: 47 }, uSec: { value: 100 }, uInk: { value: lin('#141413') }, uLamp: { value: 0 } };
+    var C2 = 'vec2(' + CX.toFixed(2) + ', ' + CZ.toFixed(2) + ')';
+    var GLC = [
+      'uniform float uWipe, uFront, uIsl, uSec, uLamp;',
+      'float t3h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+      'float t3n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(t3h(i), t3h(i + vec2(1, 0)), f.x), mix(t3h(i + vec2(0, 1)), t3h(i + vec2(1, 1)), f.x), f.y); }',
+      'float t3mt(vec2 p){ float m = clamp((uFront - (p.x + 7.0) - p.y * .3) / 4.0, 0.0, 1.0); return m * m * (3.0 - 2.0 * m); }',
+      'float t3real(vec2 p){',
+      '  float s = clamp((uFront - (p.x + 9.0) - p.y * .3 + (t3n(p * .21) - .5) * 7.0) / 6.0, 0.0, 1.0);',
+      '  float d = length((p - vec2(9.0, 7.0)) * vec2(.82, 1.0)) + (t3n(p * .09) - .5) * 16.0 + (t3n(p * .37) - .5) * 4.0;',
+      '  return s * (1.0 - smoothstep(uIsl - 8.0, uIsl, d));',
+      '}',
+      'bool t3sec(vec2 p){ return p.y > uSec && p.y < 8.1 && p.x < 15.45 && p.x > -0.9; }'
+    ].join('\n');
+
+    /* ---------- geometry, collected per kind and merged; UVs in metres ---------- */
+    var G = {};
+    function add(kind, g){ (G[kind] = G[kind] || []).push(g); }
+    function uvM(geo, swap){
+      var p = geo.attributes.position, n = geo.attributes.normal, uv = geo.attributes.uv;
+      for (var i = 0; i < p.count; i++) {
+        var ax = Math.abs(n.getX(i)), ay = Math.abs(n.getY(i)), az = Math.abs(n.getZ(i)), x = p.getX(i), y = p.getY(i), z = p.getZ(i), a, b;
+        if (ay >= ax && ay >= az) { a = x; b = n.getY(i) > 0 ? -z : z; }
+        else if (ax >= az) { a = n.getX(i) > 0 ? -z : z; b = y; }
+        else { a = n.getZ(i) > 0 ? x : -x; b = y; }
+        if (swap) uv.setXY(i, b, a); else uv.setXY(i, a, b);
+      }
+      return geo;
+    }
+    function box(kind, x0, x1, y0, y1, z0, z1){
+      if (x1 - x0 < 1e-3 || y1 - y0 < 1e-3 || z1 - z0 < 1e-3) return;
+      var g = new T.BoxGeometry(x1 - x0, y1 - y0, z1 - z0); g.translate((x0 + x1) / 2 - CX, (y0 + y1) / 2, (z0 + z1) / 2 - CZ); add(kind, uvM(g));
+    }
+    function rbox(kind, x0, x1, y0, y1, z0, z1, rr){        // a box with softly rounded edges (cushions, mattresses)
+      var w = x1 - x0, h = y1 - y0, d = z1 - z0; rr = Math.min(rr, w / 2 - 1e-3, h / 2 - 1e-3, d / 2 - 1e-3);
+      var g = new T.BoxGeometry(w, h, d, 5, 3, 5), p = g.attributes.position, n = g.attributes.normal, hx = w / 2 - rr, hy = h / 2 - rr, hz = d / 2 - rr;
+      for (var i = 0; i < p.count; i++) {
+        var vx = p.getX(i), vy = p.getY(i), vz = p.getZ(i), cx = clamp(vx, -hx, hx), cy = clamp(vy, -hy, hy), cz = clamp(vz, -hz, hz);
+        var dx = vx - cx, dy = vy - cy, dz = vz - cz, l = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (l < 1e-6) { dx = n.getX(i); dy = n.getY(i); dz = n.getZ(i); l = 1; }
+        dx /= l; dy /= l; dz /= l; p.setXYZ(i, cx + dx * rr, cy + dy * rr, cz + dz * rr); n.setXYZ(i, dx, dy, dz);
+      }
+      g.translate((x0 + x1) / 2 - CX, (y0 + y1) / 2, (z0 + z1) / 2 - CZ); add(kind, uvM(g));
+    }
+    function cyl(kind, x, z, r0, r1, y0, y1, seg){
+      var g = new T.CylinderGeometry(r1, r0, y1 - y0, seg || 16); g.translate(x - CX, (y0 + y1) / 2, z - CZ); add(kind, uvM(g));
+    }
+    function run(kind, axis, a0, a1, c0, c1, y0, y1){ if (axis === 'x') box(kind, a0, a1, y0, y1, c0, c1); else box(kind, c0, c1, y0, y1, a0, a1); }
+    function wallRun(kind, axis, a0, a1, c0, c1, h, opens, y0){
+      var cur = a0; y0 = y0 || 0;
+      (opens || []).slice().sort(function(p, q){ return p[0] - q[0]; }).forEach(function(o){
+        run(kind, axis, cur, o[0], c0, c1, y0, h);
+        if (o[2] > y0) run(kind, axis, o[0], o[1], c0, c1, y0, o[2]);
+        if (o[3] < h) run(kind, axis, o[0], o[1], c0, c1, Math.max(o[3], y0), h);
+        cur = o[1];
+      });
+      run(kind, axis, cur, a1, c0, c1, y0, h);
+    }
+    function glazing(axis, at, opens, out){
+      opens.forEach(function(o){
+        var a0 = o[0], a1 = o[1], s = o[2], hd = o[3], f = .06;
+        run('glass', axis, a0, a1, at - .012, at + .012, s, hd);
+        run('frame', axis, a0, a0 + f, at - .05, at + .05, s, hd); run('frame', axis, a1 - f, a1, at - .05, at + .05, s, hd);
+        run('frame', axis, a0, a1, at - .05, at + .05, hd - f, hd); run('frame', axis, a0, a1, at - .05, at + .05, s, s + f);
+        if (s > .05) run('frame', axis, a0 - .03, a1 + .03, Math.min(at, at + out * .2), Math.max(at, at + out * .2), s - .03, s);   // sill
+        var n = Math.floor((a1 - a0) / 1.5);
+        for (var i = 1; i <= n; i++) { var m = a0 + (a1 - a0) * i / (n + 1); run('frame', axis, m - f / 2, m + f / 2, at - .05, at + .05, s, hd); }
+      });
+    }
+    // exterior wall: plaster core inside, tarred boards outside on a concrete plinth. Walls along x own the corners.
+    function ext(axis, at, a0, a1, out, h, opens){
+      var t = .15, e0 = axis === 'x' ? a0 - t : a0 + t, e1 = axis === 'x' ? a1 + t : a1 - t;
+      var ci = at - out * t, co = at + out * .09, di = at + out * t;
+      wallRun('core', axis, e0, e1, Math.min(ci, co), Math.max(ci, co), h, opens);
+      wallRun('clad', axis, e0, e1, Math.min(co, di), Math.max(co, di), h, opens, .24);
+      run('conc', axis, e0 + (axis === 'x' ? .03 : 0), e1 - (axis === 'x' ? .03 : 0), Math.min(co, di - out * .025), Math.max(co, di - out * .025), 0, .24);
+      glazing(axis, at + out * .04, opens.filter(function(o){ return o[4] !== 'open'; }), out);
+    }
+    function prism(kind, axis, poly, c0, c1){
+      var P = function(a, y, c){ return axis === 'x' ? [c - CX, y, a - CZ] : [a - CX, y, c - CZ]; };
+      var tris = [], n = poly.length, i, cen = [0, 0, 0], pos = [];
+      for (i = 1; i < n - 1; i++) [c0, c1].forEach(function(c){ tris.push([P(poly[0][0], poly[0][1], c), P(poly[i][0], poly[i][1], c), P(poly[i + 1][0], poly[i + 1][1], c)]); });
+      for (i = 0; i < n; i++) {
+        var a = poly[i], b = poly[(i + 1) % n];
+        var A0 = P(a[0], a[1], c0), B0 = P(b[0], b[1], c0), A1 = P(a[0], a[1], c1), B1 = P(b[0], b[1], c1);
+        tris.push([A0, B0, B1], [A0, B1, A1]);
+      }
+      poly.forEach(function(p){ var q = P(p[0], p[1], (c0 + c1) / 2); cen[0] += q[0] / n; cen[1] += q[1] / n; cen[2] += q[2] / n; });
+      tris.forEach(function(t){                       // wind every face outwards (the ink pass depends on it)
+        var u = [t[1][0] - t[0][0], t[1][1] - t[0][1], t[1][2] - t[0][2]], v = [t[2][0] - t[0][0], t[2][1] - t[0][1], t[2][2] - t[0][2]];
+        var nn = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+        var mm = [(t[0][0] + t[1][0] + t[2][0]) / 3 - cen[0], (t[0][1] + t[1][1] + t[2][1]) / 3 - cen[1], (t[0][2] + t[1][2] + t[2][2]) / 3 - cen[2]];
+        if (nn[0] * mm[0] + nn[1] * mm[1] + nn[2] * mm[2] < 0) t = [t[0], t[2], t[1]];
+        pos.push.apply(pos, t[0].concat(t[1], t[2]));
+      });
+      var g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); g.computeVertexNormals();
+      g.setAttribute('uv', new T.Float32BufferAttribute(new Float32Array(pos.length / 3 * 2), 2)); add(kind, uvM(g));
+    }
+    function slab(kind, sx, sy, sz, rx, rz, x, y, z, swap){
+      var g = new T.BoxGeometry(sx, sy, sz); uvM(g, swap); if (rx) g.rotateX(rx); if (rz) g.rotateZ(rz); g.translate(x - CX, y, z - CZ); add(kind, g);
+    }
+
+    // living wing
+    ext('x', 0, 0, 15, -1, 3.0, [[2, 4.2, .9, 2.2], [8.5, 10.5, 1.0, 2.1]]);
+    ext('x', 7, 0, 15, 1, 3.0, [[.8, 9.2, 0, 2.6], [12.3, 14.7, 0, 2.6, 'open']]);
+    ext('z', 0, 0, 7, -1, 3.0, [[1.5, 5.5, .4, 2.6]]);
+    ext('z', 15, 0, 7, 1, 3.0, [[2, 3.4, 1, 2.1]]);
+    // glass entrance
+    ext('z', 12, 7, 9, -1, 2.7, [[7.25, 8.75, 0, 2.5]]);
+    ext('z', 15, 7, 9, 1, 2.7, [[7.4, 8.6, 0, 2.3]]);
+    // bedroom wing
+    ext('x', 9, 11, 17.5, -1, 2.8, [[12.3, 14.7, 0, 2.6, 'open'], [15.8, 17, 1, 2]]);
+    ext('x', 20, 11, 17.5, 1, 2.8, [[12.2, 16.3, 0, 2.6]]);
+    ext('z', 11, 9, 20, -1, 2.8, [[11, 13, .6, 2.3], [16, 18.5, 0, 2.4]]);
+    ext('z', 17.5, 9, 20, 1, 2.8, [[12, 13.5, 1, 2.1], [18.2, 19.4, .6, 2.3]]);
+    // partitions
+    wallRun('core', 'z', .15, 2.4, 10.44, 10.56, 3.0, []);
+    wallRun('core', 'z', .15, 3.4, 11.94, 12.06, 3.0, [[1.2, 2.1, 0, 2.1]]);
+    wallRun('core', 'x', 12.06, 14.85, 3.34, 3.46, 3.0, [[12.6, 13.5, 0, 2.1]]);
+    wallRun('core', 'z', 9.15, 12.9, 14.74, 14.86, 2.8, [[11.6, 12.4, 0, 2.1]]);
+    wallRun('core', 'x', 14.86, 17.35, 12.84, 12.96, 2.8, []);
+    wallRun('core', 'x', 11.15, 17.35, 15.14, 15.26, 2.8, [[13.6, 14.5, 0, 2.1]]);
+    // gables: boards outside, plaster inside
+    [[-.15, -.09, .15], [15.15, 15.09, 14.85]].forEach(function(gx){
+      var tri = [[-.15, 3.0], [7.15, 3.0], [3.5, RA]];
+      prism('clad', 'x', tri, Math.min(gx[0], gx[1]), Math.max(gx[0], gx[1])); prism('core', 'x', tri, Math.min(gx[1], gx[2]), Math.max(gx[1], gx[2]));
+    });
+    [[8.85, 8.91, 9.15], [20.15, 20.09, 19.85]].forEach(function(gz){
+      var tri = [[10.85, 2.8], [17.65, 2.8], [14.25, RB]];
+      prism('clad', 'z', tri, Math.min(gz[0], gz[1]), Math.max(gz[0], gz[1])); prism('core', 'z', tri, Math.min(gz[1], gz[2]), Math.max(gz[1], gz[2]));
+    });
+    // roofs, 40 degrees, 0.5 m eaves; a pine ceiling under them; black fascia and gutters
+    var rr = 40 * D2R, LA = 4.15 / COS, LB = 3.9 / COS;
+    slab('roof', 16, .28, LA, -rr, 0, 7.5, 4.4288, 1.335); slab('roof', 16, .28, LA, rr, 0, 7.5, 4.4288, 5.665);
+    box('trim', -.5, 15.5, 6.08, 6.36, 3.25, 3.75);
+    slab('roof', LB, .28, 12, 0, rr, 12.21, 4.1239, 14.5, 1); slab('roof', LB, .28, 12, 0, -rr, 16.29, 4.1239, 14.5, 1);
+    box('trim', 14.0, 14.5, 5.67, 5.95, 8.5, 20.5);
+    box('roof', 11.85, 15.15, 2.7, 2.92, 6.9, 9.0);
+    var LC = 3.35 / COS, LD = 3.1 / COS;
+    slab('ceil', 14.7, .03, LC, -rr, 0, 7.5, 3.0 + 1.825 * TAN - .21, 1.825); slab('ceil', 14.7, .03, LC, rr, 0, 7.5, 3.0 + 1.825 * TAN - .21, 5.175);
+    slab('ceil', LD, .03, 10.7, 0, rr, 12.7, 2.8 + 1.55 * TAN - .21, 14.5, 1); slab('ceil', LD, .03, 10.7, 0, -rr, 15.8, 2.8 + 1.55 * TAN - .21, 14.5, 1);
+    box('trim', -.55, 15.55, 2.5, 2.9, -.72, -.62); box('trim', -.55, 15.55, 2.5, 2.9, 7.62, 7.72);
+    box('trim', 10.28, 10.38, 2.3, 2.72, 8.45, 20.55); box('trim', 18.12, 18.22, 2.3, 2.72, 8.45, 20.55);
+    [[-.4, -.66], [15.4, -.66], [-.4, 7.66], [15.4, 7.66]].forEach(function(d){ cyl('trim', d[0], d[1], .045, .045, 0, 2.5, 10); });
+    [[10.34, 20.3], [18.16, 20.3]].forEach(function(d){ cyl('trim', d[0], d[1], .045, .045, 0, 2.3, 10); });
+    // floors and terrace
+    box('floor', .15, 14.85, 0, .04, .15, 6.85); box('floor', 12.15, 14.85, 0, .04, 6.85, 9.15); box('floor', 11.15, 17.35, 0, .04, 9.15, 19.85);
+    box('deck', 0, 10.8, 0, .14, 7.15, 12.2); box('deck', 3.6, 6.0, 0, .07, 12.2, 12.6);
+    // furniture: living
+    rbox('sofa', 3.75, 4.65, .1, .44, 2.6, 5.0, .06); rbox('sofa', 4.42, 4.65, .1, .82, 2.6, 5.0, .07);
+    rbox('sofa', 3.75, 4.6, .1, .6, 2.6, 2.82, .06); rbox('sofa', 3.75, 4.6, .1, .6, 4.78, 5.0, .06);
+    rbox('sofa', 3.85, 4.4, .44, .58, 2.85, 3.8, .06); rbox('sofa', 3.85, 4.4, .44, .58, 3.82, 4.76, .06);
+    box('oakF', 3.8, 4.6, .04, .1, 2.65, 2.7); box('oakF', 3.8, 4.6, .04, .1, 4.9, 4.95);
+    box('wool', 1.2, 3.5, .04, .052, 2.7, 5.1);
+    box('oakF', 2.05, 2.85, .4, .44, 3.5, 4.3); box('oakF', 2.1, 2.16, .052, .4, 3.55, 4.25); box('oakF', 2.74, 2.8, .052, .4, 3.55, 4.25);
+    cyl('steel', .9, .9, .28, .28, .04, 1.05, 24); cyl('steel', .9, .9, .085, .085, 1.05, 4.75, 14);
+    box('fire', .72, 1.08, .28, .66, 1.17, 1.2);
+    // dining
+    box('oakF', 5.6, 7.8, .72, .76, 3.6, 4.6);
+    [[5.68, 3.68], [7.66, 3.68], [5.68, 4.46], [7.66, 4.46]].forEach(function(l){ box('oakF', l[0], l[0] + .06, .04, .72, l[1], l[1] + .06); });
+    [6.0, 6.7, 7.4].forEach(function(x){
+      [[3.1, 3.5, 3.12], [4.7, 5.1, 5.06]].forEach(function(r){
+        box('oakF', x - .22, x + .22, .44, .47, r[0], r[1]);
+        box('oakF', x - .22, x + .22, .47, .86, r[2] - .02, r[2] + .02);
+        [[x - .2, r[0] + .02], [x + .16, r[0] + .02], [x - .2, r[1] - .06], [x + .16, r[1] - .06]].forEach(function(l){ box('oakF', l[0], l[0] + .04, .04, .44, l[1], l[1] + .04); });
+      });
+    });
+    // kitchen
+    box('oakF', 6.0, 10.3, .04, .86, .2, .8); box('stone', 5.98, 10.32, .86, .9, .15, .82);
+    box('oakF', 7.0, 9.6, .04, .88, 2.05, 2.85); box('stone', 6.96, 9.64, .88, .92, 2.0, 2.9);
+    box('white', 6.0, 10.3, 1.5, 2.25, .15, .5);
+    // bedrooms and bath
+    [[11.3, 12.9, 12.6, 14.7, 11.15, 1], [15.0, 17.2, 16.2, 18.2, 17.35, -1]].forEach(function(b){
+      box('oakF', b[0], b[1], .04, .3, b[2], b[3]);
+      rbox('linen', b[0] + .04, b[1] - .04, .3, .5, b[2] + .04, b[3] - .04, .07);
+      rbox('linen', b[0] + .02, b[1] - .02, .45, .56, b[5] > 0 ? b[2] + .55 : b[2] + .05, b[5] > 0 ? b[3] - .05 : b[3] - .55, .05);
+      box('oakF', Math.min(b[4], b[4] + b[5] * .15), Math.max(b[4], b[4] + b[5] * .15), .04, 1.0, b[2] - .1, b[3] + .1);
+      [[b[2] - .55, b[2] - .1], [b[3] + .1, b[3] + .55]].forEach(function(ns){ box('oakF', b[5] > 0 ? b[0] : b[1] - .45, b[5] > 0 ? b[0] + .45 : b[1], .04, .5, ns[0], ns[1]); });
+    });
+    rbox('linen', 11.45, 12.75, .56, .7, 14.15, 14.55, .08); rbox('linen', 15.35, 16.85, .56, .7, 16.35, 16.75, .08);
+    rbox('white', 15.6, 17.25, .04, .58, 9.55, 10.45, .2);
+    // the terrace: a long oak bench
+    box('deck', 1.0, 4.0, .38, .44, 11.4, 11.8); box('deck', 1.2, 1.3, .14, .38, 11.45, 11.75); box('deck', 3.7, 3.8, .14, .38, 11.45, 11.75);
+
+    function merge(list){
+      var pos = [], nor = [], uvs = [];
+      list.forEach(function(g){
+        g = g.index ? g.toNonIndexed() : g;
+        pos.push.apply(pos, g.attributes.position.array); nor.push.apply(nor, g.attributes.normal.array); uvs.push.apply(uvs, g.attributes.uv.array);
+      });
+      var m = new T.BufferGeometry();
+      m.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); m.setAttribute('normal', new T.Float32BufferAttribute(nor, 3)); m.setAttribute('uv', new T.Float32BufferAttribute(uvs, 2));
+      return m;
+    }
+
+    /* ---------- materials: paper model first, the real thing after; the cut faces are ink ---------- */
+    var PAPER = '#f7f6f2';
+    var KIND = {
+      core: { b: '#f4f1ea', tx: 'plas', tile: 2.4, rough: .93, sec: 1, boost: 1.45 },
+      clad: { b: '#9a958e', tx: 'clad', tile: 1.5, rough: 1, rmap: 1, sec: 1 },
+      conc: { b: '#cfccc6', tx: 'conc', tile: 2.2, rough: .92, sec: 1 },
+      roof: { b: '#4a4e53', tx: 'roof', tile: 1.9, rough: .9, metal: .65, rmap: 1, gray: 2.2, sec: 1 },
+      trim: { b: '#1f2023', rough: .45, metal: .6, sec: 1 },
+      frame: { b: '#e8cda6', tx: 'oak', tile: 1.1, rough: .9, rmap: 1, sec: 1 },
+      floor: { b: '#f0d9b8', tx: 'oak', tile: 1.4, rough: .8, rmap: 1, pat: 1, w: .19, ap: 1, sec: 1 },
+      ceil: { b: '#f6e8d2', tx: 'oak', tile: 1.4, rough: .95, rmap: 1, pat: 2, w: .12, ap: 1, sec: 1 },
+      deck: { b: '#e6e2db', tx: 'deck', tile: 1.0, rough: 1, rmap: 1, ap: 1, boost: 3.0 },
+      linen: { b: '#f3efe8', tx: 'linen', tile: .55, rough: .97, ap: 1, sec: 1, gray: 1.5 },
+      sofa: { b: '#b3a99a', tx: 'linen', tile: .55, rough: .97, ap: 1, sec: 1, gray: 1.4 },
+      wool: { b: '#f0e9dd', tx: 'wool', tile: .9, rough: 1, ap: 1, sec: 1 },
+      oakF: { b: '#e8cba3', tx: 'oak', tile: 1.0, rough: .85, rmap: 1, ap: 1, sec: 1 },
+      steel: { b: '#151618', rough: .5, metal: .55, ap: 1, sec: 1 },
+      stone: { b: '#ece9e3', tx: 'plas', tile: 1.3, rough: .38, ap: 1, sec: 1 },
+      white: { b: '#eeece7', rough: .32, ap: 1, sec: 1 },
+      fire: { b: '#20140c', emi: '#ff8c40', rough: .2, ap: 1, sec: 1 }
+    };
+    function houseFrag(k){
+      return [
+        'vec2 pp = vWP.xz + ' + C2 + ';',
+        'if (pp.y > uWipe) discard;',
+        k.sec ? 'if (t3sec(pp)) discard;' : '',
+        'float mt = t3mt(pp);',
+        k.ap ? 'if (mt < .5) discard;' : ''
+      ].join('\n');
+    }
+    function patchHouse(mat, k, keepTex){
+      mat.onBeforeCompile = function(sh){
+        sh.uniforms.uWipe = U.uWipe; sh.uniforms.uFront = U.uFront; sh.uniforms.uIsl = U.uIsl; sh.uniforms.uSec = U.uSec; sh.uniforms.uLamp = U.uLamp;
+        sh.uniforms.uInk = U.uInk; sh.uniforms.uColA = { value: lin(k.a || PAPER) }; sh.uniforms.uBoard = { value: k.w || .2 };
+        sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; varying vec3 vWN;')
+          .replace('#include <project_vertex>', '#include <project_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);');
+        var fs = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + GLC + '\nvarying vec3 vWP; varying vec3 vWN;\nuniform float uBoard; uniform vec3 uInk, uColA;')
+          .replace('vec4 diffuseColor = vec4( diffuse, opacity );', houseFrag(k) + '\nvec4 diffuseColor = vec4( diffuse, opacity );');
+        var after = '';
+        if (k.gray) after += '#ifdef USE_MAP\n diffuseColor.rgb = vec3(dot(sampledDiffuseColor.rgb, vec3(.3, .59, .11))) * diffuse * ' + k.gray.toFixed(2) + ';\n#endif\n';
+        if (k.pat === 1) after += [                  // floor boards along x, random lengths, each board its own piece of the veneer
+          '{ float sb = vWP.z / uBoard; float row = floor(sb), fb = fract(sb);',
+          '  float len = 1.6 + t3h(vec2(row, 3.1)) * 1.6, sx = (vWP.x + t3h(vec2(row, 7.7)) * 5.0) / len, fx = fract(sx), hv = t3h(vec2(row, floor(sx)));',
+          '  #ifdef USE_MAP',
+          '  diffuseColor.rgb = texture2D(map, vMapUv + vec2(hv * 3.7, hv * 1.9)).rgb * diffuse;',
+          '  #endif',
+          '  float seam = smoothstep(0.0, .03, fb) * smoothstep(1.0, .97, fb) * smoothstep(0.0, .006, fx * len) * smoothstep(len, len - .006, fx * len);',
+          '  diffuseColor.rgb *= mix(.86, 1.08, hv) * mix(.45, 1.0, seam); }'].join('\n');
+        if (k.pat === 2) after += [                  // ceiling boards up the slope
+          '{ float co = abs(vWN.z) > abs(vWN.x) ? vWP.x : vWP.z; float sb = co / uBoard, fb = fract(sb), hb = t3h(vec2(floor(sb), 1.7));',
+          '  diffuseColor.rgb *= mix(.9, 1.06, hb) * mix(.55, 1.0, smoothstep(0.0, .05, fb) * smoothstep(1.0, .95, fb)); }'].join('\n');
+        if (!keepTex) after += 'diffuseColor.rgb = mix(uColA, diffuseColor.rgb, mt);\n';
+        fs = fs.replace('#include <map_fragment>', '#include <map_fragment>\n' + after)
+          .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(.92, roughnessFactor, mt);')
+          .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor *= mt;')
+          .replace('#include <normal_fragment_maps>', T.ShaderChunk.normal_fragment_maps.replace('normal = normalize( tbn * mapN );', 'normal = normalize( mix( normal, tbn * mapN, mt ) );'))
+          .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance *= mt * uLamp;')
+          .replace('#include <dithering_fragment>', '#include <dithering_fragment>\nif (!gl_FrontFacing) gl_FragColor = vec4(uInk, 1.0);');
+        sh.fragmentShader = fs;
+      };
+      mat.customProgramCacheKey = function(){ return 'h3d' + (k.pat || 0) + (k.ap ? 'a' : '') + (k.sec ? 's' : '') + (k.gray ? 'g' : '') + (keepTex ? 'k' : ''); };
+    }
+
+    /* depth (shadow) and prepass (normals + depth for contact shadows) versions of every reveal rule */
+    function discardFor(mode){
+      if (mode === 'house') return 'if (pp.y > uWipe) discard; if (t3sec(pp)) discard;';
+      if (mode === 'ap') return 'if (pp.y > uWipe) discard; if (t3sec(pp)) discard; if (t3mt(pp) < .5) discard;';
+      if (mode === 'apns') return 'if (t3mt(pp) < .5) discard;';
+      if (mode === 'real') return 'if (t3real(pp) < .5) discard;';
+      if (mode === 'tree') return 'if (vWP.y > vTop) discard;';
+      return '';
+    }
+    function treeVert(){ return 'attribute vec3 aTree; varying float vTop;'; }
+    function treeTop(){ return 'vTop = t3real(aTree.xy + ' + C2 + ') * aTree.z * 1.12 - .25;'; }
+    function depthMat(mode){
+      var m = new T.MeshDepthMaterial({ depthPacking: T.RGBADepthPacking });
+      m.onBeforeCompile = function(sh){
+        sh.uniforms.uWipe = U.uWipe; sh.uniforms.uFront = U.uFront; sh.uniforms.uIsl = U.uIsl; sh.uniforms.uSec = U.uSec; sh.uniforms.uLamp = U.uLamp;
+        sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\n' + GLC + '\nvarying vec3 vWP;' + (mode === 'tree' ? treeVert() : ''))
+          .replace('#include <project_vertex>', '#include <project_vertex>\n' + (mode === 'tree' ? treeTop() : '') + '\n#ifdef USE_INSTANCING\nvWP = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;\n#else\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;\n#endif');
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + GLC + '\nvarying vec3 vWP;' + (mode === 'tree' ? 'varying float vTop;' : ''))
+          .replace('vec4 diffuseColor = vec4( 1.0 );', 'vec2 pp = vWP.xz + ' + C2 + ';\n' + discardFor(mode) + '\nvec4 diffuseColor = vec4( 1.0 );');
+      };
+      m.customProgramCacheKey = function(){ return 'd3' + mode; };
+      return m;
+    }
+    function preMat(mode){
+      return new T.ShaderMaterial({
+        uniforms: U, side: T.DoubleSide, clipping: true, clippingPlanes: CLIP,
+        vertexShader: ['#include <common>', '#include <clipping_planes_pars_vertex>', GLC, 'varying vec3 vN; varying float vZ; varying vec3 vWP;',
+          'void main(){', '#include <beginnormal_vertex>', '#include <defaultnormal_vertex>', '#include <begin_vertex>', '#include <project_vertex>', '#include <clipping_planes_vertex>',
+          'vN = normalize(transformedNormal); vZ = -mvPosition.z; vWP = (modelMatrix * vec4(transformed, 1.0)).xyz; }'].join('\n'),
+        fragmentShader: ['#include <common>', '#include <clipping_planes_pars_fragment>', GLC, 'varying vec3 vN; varying float vZ; varying vec3 vWP;',
+          'void main(){', '#include <clipping_planes_fragment>', 'vec2 pp = vWP.xz + ' + C2 + ';', discardFor(mode),
+          'vec3 n = normalize(vN); if (!gl_FrontFacing) n = -n; gl_FragColor = vec4(n * .5 + .5, vZ); }'].join('\n')
+      });
+    }
+    var PRE = { house: preMat('house'), ap: preMat('ap'), apns: preMat('apns'), real: preMat('real'), none: preMat('none') };
+    var DEP = { house: depthMat('house'), ap: depthMat('ap'), apns: depthMat('apns'), real: depthMat('real'), tree: depthMat('tree'), leaf: depthMat('tree') };
+    var preList = [];                                // [mesh, prepass material]
+
+    var HM = {};                                     // house materials by kind
+    Object.keys(G).forEach(function(kind){
+      var k = KIND[kind], mat, m;
+      if (kind === 'glass') {
+        mat = new T.MeshStandardMaterial({ color: lin('#0b1013'), roughness: .03, metalness: 0, transparent: true, opacity: .5, side: T.DoubleSide,
+          clippingPlanes: CLIP, depthWrite: false, envMapIntensity: 1.7 });
+        mat.onBeforeCompile = function(sh){
+          sh.uniforms.uWipe = U.uWipe; sh.uniforms.uFront = U.uFront; sh.uniforms.uIsl = U.uIsl; sh.uniforms.uSec = U.uSec; sh.uniforms.uLamp = U.uLamp; sh.uniforms.uColA = { value: lin('#dfe3e3') };
+          sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <project_vertex>', '#include <project_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+          sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + GLC + '\nvarying vec3 vWP; uniform vec3 uColA;')
+            .replace('vec4 diffuseColor = vec4( diffuse, opacity );', houseFrag({ sec: 1 }) + '\nvec4 diffuseColor = vec4(mix(uColA, diffuse, mt), mix(.85, opacity, mt));')
+            .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(.6, roughnessFactor, mt);');
+        };
+        m = new T.Mesh(merge(G[kind]), mat); m.renderOrder = 2;
+        scene.add(m); HM.glass = mat; return;
+      }
+      mat = new T.MeshStandardMaterial({ color: lin(k.b), roughness: k.rough, metalness: k.metal || 0, side: T.DoubleSide, clippingPlanes: CLIP, clipShadows: true });
+      if (k.emi) { mat.emissive = lin(k.emi); mat.emissiveIntensity = 7; }
+      if (k.boost) mat.color.multiplyScalar(k.boost);
+      patchHouse(mat, k);
+      m = new T.Mesh(merge(G[kind]), mat); m.castShadow = kind !== 'wool'; m.receiveShadow = true;
+      m.customDepthMaterial = k.ap ? (k.sec ? DEP.ap : DEP.apns) : DEP.house;
+      preList.push([m, k.ap ? (k.sec ? PRE.ap : PRE.apns) : PRE.house]);
+      scene.add(m); HM[kind] = mat;
+    });
+    // drawing lines on walls and roof, so the paper model reads like a model
+    var lineMat = new T.LineBasicMaterial({ color: 0x1a1a19, transparent: true, opacity: .5, clippingPlanes: CLIP, depthWrite: false });
+    lineMat.onBeforeCompile = function(sh){
+      sh.uniforms.uWipe = U.uWipe;
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <project_vertex>', '#include <project_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform float uWipe;')
+        .replace('vec4 diffuseColor', 'if (vWP.z + ' + CZ.toFixed(2) + ' > uWipe) discard;\nvec4 diffuseColor');
+    };
+    var lines = new T.LineSegments(new T.EdgesGeometry(merge([].concat(G.core, G.clad, G.roof, G.conc)), 25), lineMat);
+    scene.add(lines);
+
+    /* ---------- ground: drawing, then meadow; alpha tells the finish where the paper still is ---------- */
+    var planTex = new T.CanvasTexture(drawPlan()); planTex.flipY = false; planTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    var GU = { tPlan: { value: planTex }, tGrav: { value: null }, uBar: { value: 0 }, uShadowK: { value: 0 }, uFoot: { value: 0 },
+      uPaper: { value: srgbV('#f2f2f2') }, uInkS: { value: srgbV('#141413') }, uShadowCol: { value: lin('#23211e') }, uPlanFade: { value: 1 } };
+    var groundMat = new T.MeshStandardMaterial({ color: lin('#d2e2a2'), roughness: 1, metalness: 0 });
+    groundMat.onBeforeCompile = function(sh){
+      Object.keys(U).forEach(function(n){ sh.uniforms[n] = U[n]; }); Object.keys(GU).forEach(function(n){ sh.uniforms[n] = GU[n]; });
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <project_vertex>', '#include <project_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+      var fs = sh.fragmentShader.replace('#include <common>', ['#include <common>', GLC, 'varying vec3 vWP;',
+        'uniform sampler2D tPlan, tGrav; uniform float uBar, uShadowK, uFoot, uPlanFade; uniform vec3 uPaper, uInkS, uShadowCol;',
+        'vec3 s2l(vec3 c){ return mix(c / 12.92, pow((c + .055) / 1.055, vec3(2.4)), step(.04045, c)); }',
+        'float sdB(vec2 p, vec2 a, vec2 b){ vec2 c = (a + b) * .5, e = (b - a) * .5, d = abs(p - c) - e; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }',
+        'float sdHouse(vec2 p){ return min(min(sdB(p, vec2(-.15, -.15), vec2(15.15, 7.15)), sdB(p, vec2(10.85, 8.85), vec2(17.65, 20.15))), sdB(p, vec2(11.85, 7.0), vec2(15.15, 9.0))); }'].join('\n'))
+        .replace('#include <shadowmap_pars_fragment>', '#include <shadowmap_pars_fragment>\n' + T.ShaderChunk.shadowmask_pars_fragment)
+        .replace('vec4 diffuseColor = vec4( diffuse, opacity );', [
+          'vec2 pp = vWP.xz + ' + C2 + ';',
+          'float gReal = t3real(pp);',
+          'vec3 paperS = uPaper;',
+          'vec2 puv = (pp - vec2(' + PX0.toFixed(1) + ', ' + PZ0.toFixed(1) + ')) / ' + PS.toFixed(1) + ';',
+          'if (puv.x > 0.0 && puv.x < 1.0 && puv.y > 0.0 && puv.y < 1.0) {',
+          '  float edge = smoothstep(0.0, .06, puv.x) * smoothstep(1.0, .94, puv.x) * smoothstep(0.0, .06, puv.y) * smoothstep(1.0, .94, puv.y);',
+          '  float a = texture2D(tPlan, puv).a * step(pp.y, uWipe) * mix(1.0, edge, .75) * uPlanFade;',
+          '  paperS = mix(paperS, uInkS, a);',
+          '}',
+          'paperS = mix(paperS, uInkS, (1.0 - smoothstep(0.0, .045, abs(pp.y - uWipe))) * uBar * step(-6.0, pp.x) * step(pp.x, 25.0) * .85);',
+          'float sdH = sdHouse(pp);',
+          'vec3 paperL = s2l(paperS) * (1.0 - uFoot * .2 * exp(-abs(sdH) * 1.8));',
+          'vec4 diffuseColor = vec4( diffuse, opacity );'].join('\n'))
+        .replace('#include <map_fragment>', ['#include <map_fragment>',
+          'float gStrip = 1.0 - smoothstep(.42, .5, sdH + (t3n(pp * 3.0) - .5) * .06);',
+          'float gPath = (1.0 - smoothstep(.0, .1, abs(pp.y - 8.0) - .72 - (t3n(pp * 1.7) - .5) * .12)) * smoothstep(14.8, 15.3, pp.x) * (1.0 - smoothstep(31.0, 35.0, pp.x));',
+          'float gm = max(gStrip, gPath);',
+          '#ifdef USE_MAP',
+          '  vec3 gB = texture2D(map, vMapUv * .29 + vec2(.31, .67)).rgb * diffuse;',
+          '  float mv = t3n(pp * .07) * .6 + t3n(pp * .23) * .4;',
+          '  vec3 grass = mix(diffuseColor.rgb, gB, smoothstep(.3, .7, t3n(pp * .13 + 4.0))) * mix(.72, 1.1, mv);',
+          '  grass = mix(grass, grass * vec3(1.18, 1.02, .7), smoothstep(.55, .85, t3n(pp * .05 + 3.1)) * .35);',
+          '  grass *= 1.0 - .28 * exp(-max(sdH, 0.0) * 1.1) * (1.0 - gm);',
+          '  vec3 grav = texture2D(tGrav, pp / 1.5).rgb * vec3(.9, .88, .85);',
+          '  vec3 realC = mix(grass, grav, gm);',
+          '#else',
+          '  vec3 realC = mix(vec3(.11, .14, .06), vec3(.3, .29, .27), gm);',
+          '#endif',
+          'diffuseColor.rgb = mix(paperL, realC, gReal);'].join('\n'))
+        .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(1.0, roughnessFactor, gReal);')
+        .replace('#include <normal_fragment_maps>', T.ShaderChunk.normal_fragment_maps.replace('normal = normalize( tbn * mapN );', 'normal = normalize( mix( normal, tbn * mapN, gReal * (1.0 - gm * .5) ) );'))
+        .replace('#include <dithering_fragment>', ['#include <dithering_fragment>',
+          'vec3 paperOut = mix(paperL, uShadowCol, uShadowK * (1.0 - getShadowMask()));',
+          'gl_FragColor = vec4(mix(paperOut, gl_FragColor.rgb, gReal), gReal);'].join('\n'));
+      sh.fragmentShader = fs;
+    };
+    var groundGeo = new T.PlaneGeometry(600, 600, 1, 1); groundGeo.rotateX(-Math.PI / 2);
+    (function(){ var p = groundGeo.attributes.position, uv = groundGeo.attributes.uv; for (var i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) + CX, -(p.getZ(i) + CZ)); })();
+    var ground = new T.Mesh(groundGeo, groundMat); ground.position.y = -.005; ground.receiveShadow = true; scene.add(ground);
+    preList.push([ground, PRE.none]);
+
+    /* ---------- vegetation: spruces behind, birches around, a meadow ---------- */
+    var spruceTex = new T.CanvasTexture(paintSpruce()), birchTex = new T.CanvasTexture(paintBirch()), grassTex = new T.CanvasTexture(paintGrass()), barkTex = new T.CanvasTexture(paintBirchBark());
+    [spruceTex, birchTex, grassTex, barkTex].forEach(function(t){ t.colorSpace = T.SRGBColorSpace; t.anisotropy = aniso; });
+    barkTex.wrapS = barkTex.wrapT = T.RepeatWrapping;
+    function vegMat(map, color, opts){
+      var m = new T.MeshStandardMaterial({ map: map, color: color, roughness: opts.rough || .85, metalness: 0, side: T.DoubleSide,
+        alphaTest: opts.cut ? .5 : 0, alphaToCoverage: !!opts.cut });
+      m.onBeforeCompile = function(sh){
+        Object.keys(U).forEach(function(n){ sh.uniforms[n] = U[n]; });
+        sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\n' + GLC + '\nvarying vec3 vWP;' + (opts.grass ? '' : treeVert()))
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\n' + (opts.grass ? '#ifdef USE_INSTANCING\n{ vec3 ib = (instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz; transformed *= smoothstep(.3, .8, t3real(ib.xz + ' + C2 + ')); }\n#endif' : ''))
+          .replace('#include <project_vertex>', '#include <project_vertex>\n' + (opts.grass ? '' : treeTop()) + '\n#ifdef USE_INSTANCING\nvWP = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;\n#else\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;\n#endif');
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + GLC + '\nvarying vec3 vWP;' + (opts.grass ? '' : 'varying float vTop;'))
+          .replace('vec4 diffuseColor = vec4( diffuse, opacity );', (opts.grass ? '' : 'if (vWP.y > vTop) discard;') + '\nvec4 diffuseColor = vec4( diffuse, opacity );')
+          .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * ' + (opts.glow || 0).toFixed(3) + ';');
+      };
+      m.customProgramCacheKey = function(){ return 'v3' + (opts.grass ? 'g' : 't') + (opts.cut ? 'c' : ''); };
+      return m;
+    }
+    var VG = { trunkS: [], trunkB: [], spr: [], bir: [] };
+    function pushTree(list, g, tx, tz, H){
+      var n = g.attributes.position.count, a = new Float32Array(n * 3);
+      for (var i = 0; i < n; i++) { a[i * 3] = tx - CX; a[i * 3 + 1] = tz - CZ; a[i * 3 + 2] = H; }
+      g.setAttribute('aTree', new T.BufferAttribute(a, 3)); list.push(g);
+    }
+    function quads(arr){              // arr of [p0,p1,p2,p3, uv rect, normals fn] -> geometry
+      var pos = [], nor = [], uv = [], idx = [], k = 0;
+      arr.forEach(function(q){
+        for (var j = 0; j < 4; j++) { pos.push(q.p[j][0], q.p[j][1], q.p[j][2]); var nn = q.n(q.p[j]); nor.push(nn[0], nn[1], nn[2]); uv.push(q.uv[j][0], q.uv[j][1]); }
+        idx.push(k, k + 1, k + 2, k, k + 2, k + 3); k += 4;
+      });
+      var g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new T.Float32BufferAttribute(nor, 3));
+      g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); g.setIndex(idx); return g.toNonIndexed();
+    }
+    function nrm(v){ var l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
+    function spruce(x, z, H, seed){
+      var r = rng(seed), wx = x - CX, wz = z - CZ, R = H * .19 + r() * .5, Q = [];
+      var tr = new T.CylinderGeometry(.05, H * .011 + .1, H, 7, 1, true); tr.translate(wx, H / 2, wz);
+      var tuv = tr.attributes.uv; for (var i = 0; i < tuv.count; i++) tuv.setXY(i, tuv.getX(i) * 1.0, tuv.getY(i) * H / 1.6);
+      pushTree(VG.trunkS, tr, x, z, H);
+      var y = .9 + r() * .5;
+      while (y < H - .25) {
+        var f = (y - .9) / (H - .9), L = R * Math.pow(1 - f, .92) * (.82 + r() * .3) + .3, n = 5 + Math.floor(r() * 3), a0 = r() * 6.283;
+        for (var j = 0; j < n; j++) {
+          var a = a0 + j * 6.283 / n + (r() - .5) * .45, dx = Math.sin(a), dz = Math.cos(a), tx = Math.cos(a), tz = -Math.sin(a);
+          var droop = (.18 + .3 * (1 - f)) * L, w = Math.max(.42, L * .62);
+          var b = [wx, y, wz], t = [wx + dx * L, y - droop, wz + dz * L], yc = y - droop * .5;
+          var nfn = (function(yc0){ return function(p){ return nrm([p[0] - wx, (p[1] - yc0) * .4 + .55, p[2] - wz]); }; })(yc);
+          Q.push({ p: [[b[0] - tx * w * .2, b[1], b[2] - tz * w * .2], [t[0] - tx * w / 2, t[1], t[2] - tz * w / 2], [t[0] + tx * w / 2, t[1], t[2] + tz * w / 2], [b[0] + tx * w * .2, b[1], b[2] + tz * w * .2]],
+            uv: [[0, .38], [1, 0], [1, 1], [0, .62]], n: nfn });
+          Q.push({ p: [[b[0], b[1] - w * .12, b[2]], [t[0], t[1] - w * .3, t[2]], [t[0], t[1] + w * .3, t[2]], [b[0], b[1] + w * .12, b[2]]], uv: [[0, .38], [1, 0], [1, 1], [0, .62]], n: nfn });
+        }
+        y += .3 + r() * .16;
+      }
+      var top = [wx, H + .2, wz];
+      [0, 1.57].forEach(function(a){
+        var tx = Math.cos(a) * .5, tz = Math.sin(a) * .5;
+        Q.push({ p: [[wx - tx, H - 1.3, wz - tz], [wx + tx, H - 1.3, wz + tz], [top[0] + tx * .1, top[1], top[2] + tz * .1], [top[0] - tx * .1, top[1], top[2] - tz * .1]],
+          uv: [[0, 0], [0, 1], [1, .55], [1, .45]], n: function(p){ return nrm([p[0] - wx, .8, p[2] - wz]); } });
+      });
+      pushTree(VG.spr, quads(Q), x, z, H);
+    }
+    function birch(x, z, s, seed){
+      var r = rng(seed), wx = x - CX, wz = z - CZ, H = (10 + r() * 3.5) * s, lean = [(r() - .5) * .6, (r() - .5) * .6], Q = [], i;
+      var tr = new T.CylinderGeometry(.06 * s, .17 * s, H * .92, 9, 6, true), tp = tr.attributes.position;
+      for (i = 0; i < tp.count; i++) { var hy = (tp.getY(i) + H * .46) / H; tp.setXYZ(i, tp.getX(i) + lean[0] * hy * hy + Math.sin(hy * 6 + seed) * .05, tp.getY(i), tp.getZ(i) + lean[1] * hy * hy); }
+      tr.computeVertexNormals(); tr.translate(wx, H * .46, wz); pushTree(VG.trunkB, tr, x, z, H);
+      for (i = 0; i < 7; i++) {                     // main limbs
+        var by = H * (.45 + i * .055), a = r() * 6.283, L = (1.6 + r() * 1.4) * s, lg = new T.CylinderGeometry(.025, .05, L, 5, 1, true);
+        lg.translate(0, L / 2, 0); lg.rotateZ(-(.55 + r() * .35)); lg.rotateY(a); var hh = by / H; lg.translate(wx + lean[0] * hh * hh, by, wz + lean[1] * hh * hh);
+        pushTree(VG.trunkB, lg, x, z, H);
+      }
+      var cy = H * .66, rx = H * .2 + .6, ry = H * .27;
+      for (i = 0; i < 170; i++) {
+        var u = r() * 6.283, v = Math.acos(2 * r() - 1), rad = Math.pow(r(), .35);
+        var px = wx + lean[0] * .5 + Math.sin(v) * Math.cos(u) * rx * rad, py = cy + Math.cos(v) * ry * rad, pz = wz + lean[1] * .5 + Math.sin(v) * Math.sin(u) * rx * rad;
+        var sz = (1.3 + r() * .8) * s, az = r() * 6.283, ux = Math.cos(az) * sz / 2, uz = Math.sin(az) * sz / 2, tilt = (r() - .5) * .8;
+        var c = [wx + lean[0] * .5, cy, wz + lean[1] * .5];
+        Q.push({ p: [[px - ux, py - sz / 2, pz - uz + tilt * .3], [px + ux, py - sz / 2, pz + uz - tilt * .3], [px + ux, py + sz / 2, pz + uz + tilt * .3], [px - ux, py + sz / 2, pz - uz - tilt * .3]],
+          uv: [[0, 0], [1, 0], [1, 1], [0, 1]], n: function(p){ return nrm([p[0] - c[0], (p[1] - c[1]) * .8 + 1.2, p[2] - c[2]]); } });
+      }
+      pushTree(VG.bir, quads(Q), x, z, H);
+    }
+    BIRCH.forEach(function(t, i){ birch(t[0], t[1], t[2], 100 + i); });
+    (function(){                                    // the spruce forest: north and east, out of the low western sun
+      var r = rng(77), n = 0, tries = 0;
+      while (n < 46 && tries++ < 2000) {
+        var x = -26 + r() * 74, z = -32 + r() * 72;
+        var north = z < -8.5 && z > -34, east = x > 27 && x < 50 && z > -12 && z < 34;
+        if (!north && !east) continue;
+        var d = Math.hypot((x - 9) * .82, z - 7); if (d > 41) continue;
+        spruce(x, z, 11 + r() * 8, 500 + n); n++;
+      }
+    })();
+    function mergeTree(list){
+      var m = merge(list), n = 0, a = [];
+      list.forEach(function(g){ var t = g.attributes.aTree.array; a.push.apply(a, g.index ? g.toNonIndexed().attributes.aTree.array : t); n++; });
+      m.setAttribute('aTree', new T.Float32BufferAttribute(a, 3)); return m;
+    }
+    var vegMats = {
+      trunkS: new T.MeshStandardMaterial({ color: lin('#8a7f74'), roughness: .95 }),
+      trunkB: vegMat(barkTex, lin('#ffffff'), { rough: .8 }),
+      spr: vegMat(spruceTex, lin('#c2d0b4'), { cut: 1, rough: .9, glow: .02 }),
+      bir: vegMat(birchTex, lin('#dfe3cf'), { cut: 1, rough: .85, glow: .035 })
+    };
+    (function(m){ var b = vegMat(null, m.color, { rough: .95 }); vegMats.trunkS = b; })(vegMats.trunkS);
+    ['trunkS', 'trunkB', 'spr', 'bir'].forEach(function(k){
+      var mesh = new T.Mesh(mergeTree(VG[k]), vegMats[k]); mesh.castShadow = true; mesh.receiveShadow = true; mesh.customDepthMaterial = (k === 'spr' || k === 'bir') ? DEP.leaf : DEP.tree;
+      mesh.frustumCulled = false; scene.add(mesh); VG[k + 'M'] = mesh;
+    });
+    // meadow tufts (instanced crossed cards), kept off the lawn near the house
+    var tuft = function(u0){
+      var g = quads([0, 1.5708].map(function(a){ var c = Math.cos(a) * .3, s = Math.sin(a) * .3;
+        return { p: [[-c, 0, -s], [c, 0, s], [c, .5, s], [-c, .5, -s]], uv: [[u0, 0], [u0 + .5, 0], [u0 + .5, 1], [u0, 1]], n: function(){ return [0, 1, 0]; } }; }));
+      return g;
+    };
+    var grassMat = vegMat(grassTex, lin('#f6f1d8'), { cut: 1, rough: .95, grass: 1, glow: .05 });
+    var sdHouseJS = function(x, z){
+      function sb(ax, az, bx, bz){ var cx = (ax + bx) / 2, cz = (az + bz) / 2, ex = (bx - ax) / 2, ez = (bz - az) / 2, dx = Math.abs(x - cx) - ex, dz = Math.abs(z - cz) - ez;
+        return Math.hypot(Math.max(dx, 0), Math.max(dz, 0)) + Math.min(Math.max(dx, dz), 0); }
+      return Math.min(sb(-.15, -.15, 15.15, 7.15), sb(10.85, 8.85, 17.65, 20.15), sb(11.85, 7, 15.15, 9), sb(0, 7.15, 10.8, 12.6));
+    };
+    var ROCKS = [[-2.2, 9.8, 0, 1.0, 0], [-1.0, 13.5, 3, .7, 1.2], [3.4, 15.2, 5, .55, 2.1], [19.2, 10.6, 7, .6, .6], [24.5, 5.8, 2, .9, 3.0],
+      [2.5, -4.2, 8, .75, 4.1], [-9.5, -1.0, 1, 1.5, 1.0], [30.0, 18.5, 4, 1.7, 2.4], [14.0, 27.0, 9, 1.2, 5.0], [-14.0, 10.5, 10, 1.6, 0.4],
+      [-4.5, 25.0, 6, 1.3, 1.9], [27.5, -6.0, 11, 1.4, 2.7], [9.5, 15.6, 12, .5, .3], [19.8, 2.0, 3, .45, 4.4]];
+    (function(){
+      var r = rng(9), M = new T.Matrix4(), q = new T.Quaternion(), e = new T.Euler(), v = new T.Vector3(), sv = new T.Vector3();
+      [[0, small ? 2200 : 5200], [.5, small ? 300 : 650]].forEach(function(cfg){
+        var mats = [];
+        for (var tries = 0; mats.length < cfg[1] && tries < cfg[1] * 8; tries++) {
+          var a = r() * 6.283, d = Math.sqrt(r()) * 40, x = 9 + Math.cos(a) * d / .82, z = 7 + Math.sin(a) * d;
+          var sd = sdHouseJS(x, z); if (sd < 2.2 + r() * 2.5) continue;
+          if (x > 15 && x < 35 && Math.abs(z - 8) < 1.4) continue;
+          if (ROCKS.some(function(k){ return Math.hypot(x - k[0], z - k[1]) < k[3] * 1.3; })) continue;
+          var s = .5 + r() * .55; e.set(0, r() * 6.283, 0); q.setFromEuler(e);
+          M.compose(v.set(x - CX, 0, z - CZ), q, sv.set(s, s * (.7 + r() * .7), s)); mats.push(M.clone());
+        }
+        var im = new T.InstancedMesh(tuft(cfg[0]), grassMat, mats.length); mats.forEach(function(m, i){ im.setMatrixAt(i, m); });
+        im.receiveShadow = true; im.frustumCulled = false; scene.add(im);
+      });
+    })();
+
+    /* ---------- light: soft sky, a sun, warm lamps for the section ---------- */
+    var hemi = new T.HemisphereLight(0xffffff, lin('#d9d5cc'), 1.55); scene.add(hemi);
+    var sun = new T.DirectionalLight(0xffffff, 2.3); sun.castShadow = true;
+    var sc = sun.shadow.camera; sc.left = -40; sc.right = 40; sc.top = 40; sc.bottom = -40; sc.near = 1; sc.far = 200;
+    sun.shadow.mapSize.set(small ? 2048 : 4096, small ? 2048 : 4096); sun.shadow.bias = -.0003; sun.shadow.normalBias = .035; sun.shadow.radius = 3;
+    scene.add(sun); scene.add(sun.target);
+    var lamps = [[6.7, 1.7, 4.1, 5], [2.6, 2.2, 3.9, 4], [8.3, 2.0, 1.5, 3.5], [.9, .5, 1.45, 1.6], [13.0, 1.9, 11.6, 4], [15.8, 1.9, 17.4, 4], [13.4, 2.0, 8.0, 2.5]].map(function(p){
+      var l = new T.PointLight(lin(p[1] < 1 ? '#ff9a4a' : '#ffcf9a'), 0, 0, 2); l.position.set(p[0] - CX, p[1], p[2] - CZ); l.userData.k = p[3]; scene.add(l); return l;
+    });
+
+    /* ---------- assets: materials, the sky, models (all optional: the paper model needs none) ---------- */
+    var TL = new T.TextureLoader(), assetsReady = false;
+    function ld(name, srgb){ return TL.loadAsync(TB + name + '.jpg').then(function(t){ t.wrapS = t.wrapT = T.RepeatWrapping; t.anisotropy = aniso; if (srgb) t.colorSpace = T.SRGBColorSpace; return t; }); }
+    var TXN = { clad: ['d', 'n', 'r'], roof: ['d', 'n', 'r'], oak: ['d', 'n', 'r'], plas: ['d', 'n'], deck: ['d', 'n', 'r'], grass: ['d', 'n', 'r'], grav: ['d', 'n'], conc: ['d', 'n'], bark: ['d', 'n'], linen: ['d', 'n'], wool: ['d'] };
+    var TX = {}, jobs = [];
+    Object.keys(TXN).forEach(function(k){ TX[k] = {}; TXN[k].forEach(function(s){ jobs.push(ld(k + '_' + s, s === 'd').then(function(t){ TX[k][s] = t; })); }); });
+    function rep(t, tile){ var c = t.clone(); c.repeat.set(1 / tile, 1 / tile); c.needsUpdate = true; return c; }
+    var envTex = null;
+    jobs.push(fetch(TB + 'sky.hdr').then(function(r){ return r.arrayBuffer(); }).then(function(b){
+      var eq = parseHDR(T, b, 6), pm = new T.PMREMGenerator(renderer); envTex = pm.fromEquirectangular(eq).texture; eq.dispose(); pm.dispose();
+    }));
+    var MODELS = {};
+    ['modern_arm_chair_01', 'modern_ceiling_lamp_01', 'modern_wooden_cabinet', 'rock_moss_set_01', 'rock_moss_set_02'].forEach(function(n){
+      jobs.push(fetch(TB + n + '.glb').then(function(r){ return r.arrayBuffer(); }).then(function(b){ return parseGLB(T, b); }).then(function(o){ MODELS[n] = o; }));
+    });
+    function place(grp, x, y, z, ry, s, mode){
+      var g = new T.Group(), inner = grp.clone(); inner.position.set(0, 0, 0); g.add(inner); g.position.set(x - CX, y, z - CZ); g.rotation.y = ry || 0; g.scale.setScalar(s || 1);
+      g.traverse(function(o){ if (!o.isMesh) return; o.castShadow = o.receiveShadow = true; o.customDepthMaterial = DEP[mode]; preList.push([o, PRE[mode]]); });
+      scene.add(g); return g;
+    }
+    function patchModel(mat, mode, glow){
+      var k = { sec: mode === 'ap' ? 1 : 0, ap: mode === 'ap' ? 1 : 0 };
+      if (mode === 'ap') { mat.clippingPlanes = CLIP; mat.clipShadows = true; patchHouse(mat, k, true); if (glow) { mat.emissive = lin('#ffd2a0'); mat.emissiveIntensity = 9; } return; }
+      mat.onBeforeCompile = function(sh){
+        Object.keys(U).forEach(function(n){ sh.uniforms[n] = U[n]; });
+        sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <project_vertex>', '#include <project_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\n' + GLC + '\nvarying vec3 vWP;')
+          .replace('vec4 diffuseColor = vec4( diffuse, opacity );', 'vec2 pp = vWP.xz + ' + C2 + ';\nif (t3real(pp) < .5) discard;\nvec4 diffuseColor = vec4( diffuse, opacity );');
+      };
+      mat.customProgramCacheKey = function(){ return 'rk3'; };
+    }
+    function applyAssets(){
+      Object.keys(HM).forEach(function(kind){
+        var k = KIND[kind], m = HM[kind];
+        if (kind === 'glass') { if (envTex) m.envMap = envTex; m.needsUpdate = true; return; }
+        if (!k || !k.tx || !TX[k.tx]) return;
+        var t = TX[k.tx];
+        if (t.d) m.map = rep(t.d, k.tile);
+        if (t.n) { m.normalMap = rep(t.n, k.tile); }
+        if (t.r && k.rmap) { m.roughnessMap = rep(t.r, k.tile); if (k.metal) m.metalnessMap = m.roughnessMap; }
+        m.needsUpdate = true;
+      });
+      groundMat.map = rep(TX.grass.d, 3.2); groundMat.normalMap = rep(TX.grass.n, 3.2); groundMat.normalScale.set(1.2, 1.2); groundMat.roughnessMap = rep(TX.grass.r, 3.2);
+      GU.tGrav.value = TX.grav.d; groundMat.needsUpdate = true;
+      vegMats.trunkS.map = rep(TX.bark.d, 1); vegMats.trunkS.map.repeat.set(1, 1); vegMats.trunkS.normalMap = TX.bark.n; vegMats.trunkS.needsUpdate = true;
+      vegMats.trunkS.color = lin('#bdb3a8');
+      // models
+      var chair = MODELS.modern_arm_chair_01, lamp = MODELS.modern_ceiling_lamp_01, cab = MODELS.modern_wooden_cabinet;
+      [chair, lamp, cab].forEach(function(o){ Object.keys(o || {}).forEach(function(n){ o[n].traverse(function(c){ if (c.isMesh) patchModel(c.material, 'ap', /globe/.test(c.material.name)); }); }); });
+      if (chair) { place(chair.modern_arm_chair_01, 1.05, .04, 2.9, Math.PI / 2 + .35, 1, 'ap'); place(chair.modern_arm_chair_01, 1.05, .04, 4.9, Math.PI / 2 - .35, 1, 'ap'); }
+      if (lamp) {
+        [[6.3, 4.1], [7.1, 4.1], [8.3, 2.45]].forEach(function(p){
+          place(lamp.modern_ceiling_lamp_01, p[0], 1.55, p[1], 0, 1, 'ap');
+          var top = 3.0 + (7.15 - p[1]) * TAN - .25, c = new T.Mesh(new T.CylinderGeometry(.006, .006, top - 2.5, 4), HM.steel); c.position.set(p[0] - CX, (top + 2.5) / 2, p[1] - CZ); scene.add(c);
+        });
+      }
+      if (cab) { var cb = new T.Group(); Object.keys(cab).forEach(function(n){ var q = cab[n].clone(); q.position.fromArray(cab[n].userData.t); cb.add(q); }); var cw = new T.Group(); cw.add(cb); place(cw, 3.7, .04, .46, 0, 1, 'ap'); }
+      var rocks = [];
+      ['rock_moss_set_01', 'rock_moss_set_02'].forEach(function(n){ var o = MODELS[n]; Object.keys(o || {}).forEach(function(k){ o[k].traverse(function(c){ if (c.isMesh) { patchModel(c.material, 'real'); c.material.color = lin('#a9aca6'); } }); rocks.push(o[k]); }); });
+      if (rocks.length) ROCKS.forEach(function(k){ var g = rocks[k[2] % rocks.length]; place(g, k[0], -.18 * k[3], k[1], k[4], k[3], 'real'); });
+      scene.environment = envTex;
+      assetsReady = true; dirty = true;
+      try { renderer.compile(scene, camera); } catch (e) {}
+    }
+    Promise.all(jobs).then(applyAssets, function(e){ console.warn('[t3] assets', e); });
+
+    /* ---------- post: contact shadows, bloom, the photographic finish ---------- */
+    var rtS = new T.WebGLRenderTarget(1, 1, { type: T.HalfFloatType, samples: small ? 2 : 4 });
+    var rtP = new T.WebGLRenderTarget(1, 1, { type: T.HalfFloatType, minFilter: T.NearestFilter, magFilter: T.NearestFilter });
+    var rtA = new T.WebGLRenderTarget(1, 1, { type: T.HalfFloatType, depthBuffer: false }), rtA2 = rtA.clone();
+    var rtB = new T.WebGLRenderTarget(1, 1, { type: T.HalfFloatType, depthBuffer: false }), rtB2 = rtB.clone();
+    var fsCam = new T.OrthographicCamera(-1, 1, 1, -1, 0, 1), fsScene = new T.Scene(), fsQuad = new T.Mesh(new T.PlaneGeometry(2, 2)); fsQuad.frustumCulled = false; fsScene.add(fsQuad);
+    var VS = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
+    function fsm(u, f){ return new T.ShaderMaterial({ uniforms: u, vertexShader: VS, fragmentShader: f, depthTest: false, depthWrite: false }); }
+    var kern = []; (function(){ var r = rng(3); for (var i = 0; i < 16; i++) { var v = new T.Vector3(r() * 2 - 1, r() * 2 - 1, r() * .85 + .15).normalize(); var s = i / 16; v.multiplyScalar((.15 + .85 * s * s) * (.4 + r() * .6)); kern.push(v); } })();
+    var aoMat = fsm({ tPre: { value: rtP.texture }, uRes: { value: new T.Vector2() }, uProj: { value: new T.Vector4() }, uRad: { value: .55 }, uK: { value: kern } }, [
+      'uniform sampler2D tPre; uniform vec2 uRes; uniform vec4 uProj; uniform float uRad; uniform vec3 uK[16]; varying vec2 vUv;',
+      'float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }',
+      'void main(){',
+      '  vec4 pre = texture2D(tPre, vUv); if (pre.w <= 0.0) { gl_FragColor = vec4(1.0); return; }',
+      '  float d = pre.w; vec3 n = normalize(pre.xyz * 2.0 - 1.0); vec2 nd = vUv * 2.0 - 1.0;',
+      '  vec3 p = vec3((nd.x + uProj.z) * d / uProj.x, (nd.y + uProj.w) * d / uProj.y, -d);',
+      '  float a = h(vUv * uRes) * 6.2831853; vec3 rv = vec3(cos(a), sin(a), 0.0); vec3 t = normalize(rv - n * dot(rv, n)); mat3 tbn = mat3(t, cross(n, t), n);',
+      '  float occ = 0.0, bias = .02 + d * .0015;',
+      '  for (int i = 0; i < 16; i++) {',
+      '    vec3 s = p + tbn * uK[i] * uRad; float sd = -s.z;',
+      '    vec2 suv = vec2(uProj.x * s.x / sd - uProj.z, uProj.y * s.y / sd - uProj.w) * .5 + .5;',
+      '    if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;',
+      '    float dw = texture2D(tPre, suv).w; if (dw <= 0.0) continue;',
+      '    occ += (dw < sd - bias ? 1.0 : 0.0) * smoothstep(0.0, 1.0, uRad / abs(d - dw));',
+      '  }',
+      '  gl_FragColor = vec4(vec3(1.0 - occ / 16.0), 1.0);',
+      '}'].join('\n'));
+    var aoBlur = fsm({ tA: { value: null }, tPre: { value: rtP.texture }, uDir: { value: new T.Vector2() } }, [
+      'uniform sampler2D tA, tPre; uniform vec2 uDir; varying vec2 vUv;',
+      'void main(){ float d0 = texture2D(tPre, vUv).w, s = 0.0, w = 0.0;',
+      '  for (int i = -4; i <= 4; i++) { vec2 uv = vUv + uDir * float(i); float d = texture2D(tPre, uv).w; float k = exp(-float(i * i) / 9.0) * step(abs(d - d0), .04 * d0 + .05); s += texture2D(tA, uv).r * k; w += k; }',
+      '  gl_FragColor = vec4(vec3(s / max(w, 1e-4)), 1.0); }'].join('\n'));
+    var bright = fsm({ tS: { value: rtS.texture }, uExpo: { value: 1 }, uThr: { value: 1.1 }, uPx: { value: new T.Vector2() } }, [
+      'uniform sampler2D tS; uniform float uExpo, uThr; uniform vec2 uPx; varying vec2 vUv;',
+      'void main(){ vec3 c = vec3(0.0);',
+      '  for (int i = 0; i < 4; i++) { vec2 o = vec2(i == 1 || i == 3 ? 1.0 : -1.0, i > 1 ? 1.0 : -1.0) * uPx; vec4 s = texture2D(tS, vUv + o); c += s.rgb * step(.5, s.a); }',
+      '  c *= uExpo * .25; float l = max(c.r, max(c.g, c.b)); gl_FragColor = vec4(c * smoothstep(uThr, uThr * 2.2, l), 1.0); }'].join('\n'));
+    var blur = fsm({ tA: { value: null }, uDir: { value: new T.Vector2() } }, [
+      'uniform sampler2D tA; uniform vec2 uDir; varying vec2 vUv;',
+      'void main(){ vec3 s = vec3(0.0); float w = 0.0; for (int i = -6; i <= 6; i++) { float k = exp(-float(i * i) / 14.0); s += texture2D(tA, vUv + uDir * float(i)).rgb * k; w += k; } gl_FragColor = vec4(s / w, 1.0); }'].join('\n'));
+    var FU = { tS: { value: rtS.texture }, tA: { value: rtA.texture }, tB: { value: rtB.texture }, uExpo: { value: 1 }, uGrade: { value: 0 }, uAOk: { value: 0 }, uBloom: { value: 0 },
+      uSeed: { value: 0 }, uVig: { value: .28 }, uRes: { value: new T.Vector2() }, uTint: { value: new T.Vector3(1, 1, 1) } };
+    var finish = fsm(FU, [
+      'uniform sampler2D tS, tA, tB; uniform float uExpo, uGrade, uAOk, uBloom, uSeed, uVig; uniform vec2 uRes; uniform vec3 uTint; varying vec2 vUv;',
+      'vec3 l2s(vec3 c){ return mix(c * 12.92, 1.055 * pow(max(c, vec3(0.0)), vec3(1.0 / 2.4)) - .055, step(.0031308, c)); }',
+      'vec3 neutral(vec3 color){ float x = min(color.r, min(color.g, color.b)); float off = x < .08 ? x - 6.25 * x * x : .04; color -= off;',
+      '  float peak = max(color.r, max(color.g, color.b)); if (peak < .76) return color; float d = .24; float np = 1.0 - d * d / (peak + d - .76);',
+      '  color *= np / peak; float g = 1.0 - 1.0 / (.15 * (peak - np) + 1.0); return mix(color, vec3(np), g); }',
+      'vec3 aces(vec3 x){ return clamp((x * (2.51 * x + .03)) / (x * (2.43 * x + .59) + .14), 0.0, 1.0); }',
+      'void main(){',
+      '  vec4 s = texture2D(tS, vUv); float ao = mix(1.0, texture2D(tA, vUv).r, uAOk);',
+      '  vec3 c = s.rgb * ao; float m = clamp(s.a * 2.0, 0.0, 1.0);',
+      '  vec3 raw = l2s(clamp(c, 0.0, 1.0));',
+      '  vec3 hd = c * uExpo + texture2D(tB, vUv).rgb * uBloom;',
+      '  vec3 t = l2s(mix(neutral(hd), aces(hd), uGrade));',
+      '  float L = dot(t, vec3(.2126, .7152, .0722));',
+      '  t = mix(vec3(L), t, 1.0 - .1 * uGrade); t = mix(t, t * t * (3.0 - 2.0 * t), .16 * uGrade); t *= mix(vec3(1.0), uTint, uGrade);',
+      '  vec2 q = vUv - .5; q.x *= uRes.x / uRes.y; t *= 1.0 - uVig * uGrade * smoothstep(.35, 1.15, length(q));',
+      '  t += (fract(sin(dot(vUv * uRes + uSeed, vec2(12.9898, 78.233))) * 43758.5453) - .5) * .028 * uGrade;',
+      '  gl_FragColor = vec4(mix(raw, t, m), 1.0);',
+      '}'].join('\n'));
+    var white = new T.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); white.needsUpdate = true;
+    var black = new T.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1); black.needsUpdate = true;
+    function pass(mat, target){ fsQuad.material = mat; renderer.setRenderTarget(target); renderer.render(fsScene, fsCam); }
+    var paperLin = lin('#f2f2f2');
+    function render(){
+      renderer.shadowMap.needsUpdate = true;
+      renderer.setRenderTarget(rtS); renderer.setClearColor(paperLin, 0); renderer.clear(); renderer.render(scene, camera);
+      var aoOn = FU.uAOk.value > .01, blOn = FU.uBloom.value > .01;
+      if (aoOn) {
+        var hidden = [], swap = [];
+        scene.traverse(function(o){ if ((o.isMesh || o.isLine || o.isLineSegments) && o.visible) hidden.push(o); });
+        hidden.forEach(function(o){ o.visible = false; });
+        preList.forEach(function(e){ if (hidden.indexOf(e[0]) < 0) return; e[0].visible = true; swap.push([e[0], e[0].material]); e[0].material = e[1]; });
+        renderer.setRenderTarget(rtP); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(scene, camera);
+        swap.forEach(function(s){ s[0].material = s[1]; });
+        hidden.forEach(function(o){ o.visible = true; });
+        var P = camera.projectionMatrix.elements; aoMat.uniforms.uProj.value.set(P[0], P[5], P[8], P[9]);
+        pass(aoMat, rtA);
+        aoBlur.uniforms.tA.value = rtA.texture; aoBlur.uniforms.uDir.value.set(1 / rtA.width, 0); pass(aoBlur, rtA2);
+        aoBlur.uniforms.tA.value = rtA2.texture; aoBlur.uniforms.uDir.value.set(0, 1 / rtA.height); pass(aoBlur, rtA);
+        FU.tA.value = rtA.texture;
+      } else FU.tA.value = white;
+      if (blOn) {
+        bright.uniforms.uExpo.value = FU.uExpo.value; bright.uniforms.uPx.value.set(1 / rtS.width, 1 / rtS.height); pass(bright, rtB);
+        for (var k = 1; k <= 2; k++) {
+          blur.uniforms.tA.value = rtB.texture; blur.uniforms.uDir.value.set(k * 1.6 / rtB.width, 0); pass(blur, rtB2);
+          blur.uniforms.tA.value = rtB2.texture; blur.uniforms.uDir.value.set(0, k * 1.6 / rtB.height); pass(blur, rtB);
+        }
+        FU.tB.value = rtB.texture;
+      } else FU.tB.value = black;
+      FU.uSeed.value = (FU.uSeed.value + 17.31) % 1000;
+      pass(finish, null);
+    }
+
+    /* ---------- scroll keys ---------- */
+    var KT = [-.25, .12, .36, .52, .7, .86, 1];
+    var K = {
+      th: mono(KT, [0, 0, -20, -32, -36, -20, -18]), ph: mono(KT, [89, 89, 52, 34, 21, 15, 14]), h: mono(KT, [30, 30, 26, 27, 28, 19.5, 18.5]),
+      fov: mono(KT, [8, 8, 26, 30, 32, 32, 32]), tx: mono(KT, [8.9, 8.9, 8.75, 8.6, 8.9, 7.2, 7.0]), ty: mono(KT, [0, 0, 1.4, 2.0, 2.6, 1.9, 1.8]), tz: mono(KT, [10.2, 10.2, 10, 10, 10.5, 5.6, 5.2])
+    };
+    var LT = [0, .5, .62, .74, .96];
+    var LK = { az: mono(LT, [-41, -41, -66, -70, -84]), el: mono(LT, [50, 50, 26, 22, 10.5]), si: mono(LT, [2.3, 2.3, 3.4, 3.3, 2.7]),
+      env: mono(LT, [0, 0, 1.0, 1.0, .55]), hemi: mono(LT, [1.55, 1.55, .12, .12, .08]), expo: mono(LT, [1, 1, .9, .9, 1.0]), bloom: mono(LT, [0, 0, .18, .2, .45]) };
+    var sunCols = [lin('#ffffff'), lin('#fff1dc'), lin('#ffd9ae'), lin('#ffb36c')];
+    var W = 1, H = 1, tgt = new T.Vector3(), sdir = new T.Vector3();
+    function resize(){
+      W = stick.clientWidth || innerWidth; H = stick.clientHeight || innerHeight;
+      var dpr = Math.min(devicePixelRatio || 1, W < 810 ? 1.5 : 1.6);
+      renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); camera.aspect = W / H;
+      var w = Math.round(W * dpr), h = Math.round(H * dpr);
+      rtS.setSize(w, h); rtP.setSize(w >> 1, h >> 1); rtA.setSize(w >> 1, h >> 1); rtA2.setSize(w >> 1, h >> 1); rtB.setSize(w >> 2, h >> 2); rtB2.setSize(w >> 2, h >> 2);
+      aoMat.uniforms.uRes.value.set(w >> 1, h >> 1); FU.uRes.value.set(w, h);
+      var sh = W >= 1200 ? .13 : W >= 810 ? .15 : 0;
+      camera.setViewOffset(W, H, -W * sh, W < 810 ? -H * .04 : 0, W, H);
+      dirty = true;
+    }
+
+    var stepEls = sec.querySelectorAll('.t3-steps li'), readL = sec.querySelector('.t3-read small'), readV = sec.querySelector('.t3-read b');
+    var curStage = -1, curRead = '', scrim = sec.querySelector('.t3-scrim');
+    function apply(p){
+      // 01 plan, drawn top to bottom as the section arrives
+      var w = easeIO(seg(p, -.16, .08));
+      U.uWipe.value = lerp(-6.5, 26.5, w);
+      GU.uBar.value = w > 0 && w < 1 ? 1 : 0;
+      // 02-03 the cut rises through walls and roof
+      var cut = p < .16 ? 1.2 : p < .36 ? lerp(1.2, 3.05, easeIO(seg(p, .16, .36))) : lerp(3.05, 6.6, easeIO(seg(p, .36, .5)));
+      cutPlane.constant = p > .52 ? 100 : cut;
+      var sh = ease(seg(p, .16, .3));
+      GU.uShadowK.value = .26 * sh; GU.uFoot.value = sh * (1 - ease(seg(p, .5, .6)));
+      FU.uAOk.value = sh * .85;
+      lineMat.opacity = .5 * (1 - ease(seg(p, .52, .62))); lines.visible = lineMat.opacity > .01;
+      // 04 the drawing develops into the real thing: a front sweeps west to east, slowly over the house, then out to the trees
+      var mt = seg(p, .52, .72);
+      U.uFront.value = p < .52 ? -90 : mt < .62 ? lerp(-12, 31, easeIO(mt / .62)) : lerp(31, 118, Math.pow((mt - .62) / .38, 1.6));
+      GU.uPlanFade.value = 1 - .5 * ease(seg(p, .6, .72));
+      FU.uGrade.value = ease(seg(p, .5, .68));
+      // light: model light, then a real sky and a lowering, warming sun
+      var lp = clamp(p, 0, 1), az = LK.az(lp) * D2R, el = LK.el(lp) * D2R;
+      sdir.set(Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az));
+      sun.intensity = LK.si(lp);
+      var cs = lp < .5 ? 0 : lp < .62 ? (lp - .5) / .12 : lp < .74 ? 1 + (lp - .62) / .12 : 2 + seg(lp, .74, .96);
+      var ci = Math.min(2, Math.floor(cs)); sun.color.copy(sunCols[ci]).lerp(sunCols[ci + 1], cs - ci);
+      scene.environmentIntensity = assetsReady ? LK.env(lp) : 0; hemi.intensity = assetsReady ? LK.hemi(lp) : lerp(1.55, .9, ease(seg(p, .5, .62)));
+      FU.uExpo.value = LK.expo(lp); FU.uBloom.value = LK.bloom(lp);
+      var warm = ease(seg(p, .72, .95)); FU.uTint.value.set(1.02 + .04 * warm, 1.0, .97 - .05 * warm);
+      // 05 section through the living wing, lamps on
+      U.uSec.value = p < .74 ? 100 : lerp(8.2, SECZ, easeIO(seg(p, .74, .9)));
+      var gl = ease(seg(p, .76, .93)); U.uLamp.value = gl; lamps.forEach(function(l){ l.intensity = l.userData.k * 2.4 * gl; });
+      scrim.style.opacity = (W >= 810 && W < 1200 ? 1 : ease(seg(p, .4, .56))).toFixed(3);
+      // camera
+      var hh = K.h(p), fov = K.fov(p), asp = W / H;
+      if (asp < 1.2) hh *= 1.2 / asp;
+      if (W >= 810 && W < 1200) hh *= 1.12;
+      var d = hh / (2 * Math.tan(fov * D2R / 2)), th = K.th(p) * D2R, ph = K.ph(p) * D2R;
+      tgt.set(K.tx(p) - CX, K.ty(p), K.tz(p) - CZ);
+      camera.fov = fov; camera.near = Math.max(.4, d * .04); camera.far = d + 320;
+      camera.position.set(tgt.x + d * Math.cos(ph) * Math.sin(th), tgt.y + d * Math.sin(ph), tgt.z + d * Math.cos(ph) * Math.cos(th));
+      camera.lookAt(tgt); camera.updateProjectionMatrix();
+      sun.target.position.set(tgt.x, 0, tgt.z); sun.position.copy(sun.target.position).addScaledVector(sdir, 90);
+      // copy
+      var st = p < .16 ? 0 : p < .36 ? 1 : p < .52 ? 2 : p < .72 ? 3 : 4;
+      if (st !== curStage) { curStage = st; stepEls.forEach(function(el, k){ el.classList.toggle('on', k === st); }); }
+      var rl = st < 3 ? 'Cut height' : st === 3 ? 'Cladding' : 'Section', rv = st < 3 ? cut.toFixed(2) + ' m' : st === 3 ? 'Pine, tar-black' : 'A — A';
+      if (rl + rv !== curRead) { curRead = rl + rv; readL.textContent = rl; readV.textContent = rv; }
+    }
+
+    var block = sec.querySelector('.t3-block');
+    function target(){
+      var r = block.getBoundingClientRect(), span = r.height - innerHeight;
+      return { p: span > 0 ? clamp(-r.top / span, -.3, 1) : 0, vis: r.bottom > -50 && r.top < innerHeight + 50 };
+    }
+    var shown = target().p, last = performance.now(), dirty = true, forced = null, pageOn = false;
+    function frame(now){
+      requestAnimationFrame(frame);
+      var dt = Math.min(.1, (now - last) / 1000); last = now;
+      var t = target();
+      var on = (t.vis || forced !== null) && shown > .44; if (on !== pageOn) { pageOn = on; document.documentElement.classList.toggle('t3-on', on); }
+      sec.classList.toggle('t3-dark', shown > .67);
+      if (!t.vis && forced === null) return;
+      var goal = forced !== null ? forced : t.p;
+      var next = forced !== null ? goal : shown + (goal - shown) * (1 - Math.exp(-dt * 7));
+      if (Math.abs(next - shown) < 1e-5 && !dirty) return;
+      shown = Math.abs(goal - next) < 1e-4 ? goal : next; dirty = false;
+      apply(shown); render();
+    }
+    window.__t3 = { set: function(p){ forced = p; dirty = true; }, free: function(){ forced = null; dirty = true; }, ready: function(){ return assetsReady; },
+      draw: function(p){ forced = p; apply(p); render(); }, dbg: { FU: FU, U: U, GU: GU, HM: HM, scene: scene, sun: sun, lamps: lamps, render: render, apply: apply } };
+    new ResizeObserver(resize).observe(stick); resize();
+    apply(shown);
+    var fontReady = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 24px "DM Sans"'), document.fonts.load('400 19px "DM Sans"')]) : Promise.resolve();
+    fontReady.then(function(){ planTex.image = drawPlan(); planTex.needsUpdate = true; dirty = true; }, function(){});
+    requestAnimationFrame(frame);
+  }
+
+  function start(){
+    buildDom();
+    new MutationObserver(function(){ if (!sec || !sec.isConnected) buildDom(); }).observe(document.body, { childList: true, subtree: true });
+  }
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();
+</script>
 <style id="halden-reviews">/* ---- Reviews: scroll-revealed featured quote, counting figures, more reviews, client strip */
 section[data-framer-name="Reviews"]>*:not(.v-block):not([data-framer-name="Lined grid"]){display:none!important}
 section[data-framer-name="Reviews"]{height:auto!important;overflow:clip!important}
