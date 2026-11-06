@@ -565,9 +565,9 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
 <script>(function(){
   var DIR = 'neiden-architecture-assets/';
   // the film runs backwards: from the finished site in the sky down to the plan on the desk
-  var STAGES = [[19.5, '01', 'The site'], [6, '02', 'Inside'], [1.6, '03', 'The model'], [0, '04', 'The plan']];
+  var STAGES = [[19, '01', 'The site'], [6.6, '02', 'Inside'], [1.6, '03', 'The model'], [0, '04', 'The plan']];
   var S_MAX = 70;           // how far the dive into the "l" zooms
-  var sec, wrap, film, mask, word, steps, items = [], dur = 30.6, target = 30.55, shown = 30.55;
+  var sec, wrap, film, mask, word, steps, items = [], dur = 31.9, target = 31.85, shown = 31.85;
 
   function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
   function small(){ return matchMedia('(max-width:809.98px)').matches; }
@@ -587,7 +587,7 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
     film = document.createElement('video');
     film.className = 'i-film'; film.muted = true; film.playsInline = true; film.preload = 'auto';
     film.setAttribute('muted', ''); film.setAttribute('playsinline', '');
-    film.src = DIR + (small() ? 'v-hg-hero-m.mp4' : 'v-hg-hero.mp4');
+    film.src = DIR + (small() ? 'v-hg-hero2-m.mp4' : 'v-hg-hero2.mp4');
     film.addEventListener('loadedmetadata', function(){
       dur = film.duration || dur; scroll(); shown = target; film.currentTime = Math.max(.04, shown);
     });
@@ -1177,7 +1177,7 @@ section[data-framer-name^="Strategy"]{height:auto!important;overflow:clip!import
    the paper model takes its materials, then a section cuts it open. */
 .t3-sec{position:relative;width:100%;flex:none;background:#f2f2f2;color:#0d0d0d;
   font-family:"DM Sans","Inter",system-ui,sans-serif;--t3-mute:#6b6b68;--t3-faint:#b4b4b0;--t3-line:rgba(13,13,13,.14)}
-.t3-block{position:relative;height:540vh}
+.t3-block{position:relative;height:900vh}
 .t3-stick{position:sticky;top:0;height:100vh;overflow:hidden}
 .t3-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#eae7e2}
 
@@ -1212,11 +1212,11 @@ html.t3-on .framer-1a9wq7r-container{opacity:0!important}
 .t3-sec.t3-dark .t3-read small{color:rgba(255,255,255,.78)}
 
 @media (max-width:1199.98px){
-  .t3-block{height:500vh}
+  .t3-block{height:820vh}
   .t3-head h2{font-size:52px}
 }
 @media (max-width:809.98px){
-  .t3-block{height:440vh}
+  .t3-block{height:740vh}
   .t3-head{left:20px;right:20px;top:92px;max-width:none}
   .t3-head h2{font-size:38px;margin-top:12px}
   .t3-head p{display:none}
@@ -1228,18 +1228,24 @@ html.t3-on .framer-1a9wq7r-container{opacity:0!important}
   .t3-read{display:none}
 }
 @media (prefers-reduced-motion:reduce){ .t3-steps p,.t3-steps .t3-top{transition:none} }
+
+/* inside the house the heading steps back, the step list stays */
+.t3-head{transition:opacity .6s ease,transform .6s ease}
+.t3-sec.t3-in .t3-head{opacity:0;transform:translateY(-10px)}
 </style>
 <script>(function(){
   /* Plan to house, as a film scrubbed by scroll: the plan on paper, the walls rising out of it, the roof,
      then the meadow and the real materials in the evening sun (nordic-plan-10s). Same scrub as the hero:
      the film eases towards the scroll position and a new seek waits for the last one. */
-  var SRC = 'neiden-architecture-assets/v-np.mp4', SRC_M = 'neiden-architecture-assets/v-np-m.mp4';
+  var SRC = 'neiden-architecture-assets/v-np2.mp4', SRC_M = 'neiden-architecture-assets/v-np2-m.mp4';
   var STAGES = [
     { t: 'Plan', c: 'Drawn at 1:100, the sheet the builder works from.', at: 0, l: 'Scale', v: '1:100' },
-    { t: 'Walls', c: 'The rooms rise straight out of the drawing.', at: .1, l: 'Ceiling height', v: '2.90 m' },
-    { t: 'Roof', c: 'One flat roof with deep overhangs, a light box on top.', at: .4, l: 'Overhang', v: '2.0 m' },
-    { t: 'Site', c: 'Set into a Telemark meadow, between birch and spruce.', at: .52, l: 'Site', v: 'Telemark' },
-    { t: 'Light', c: 'Cedar, glass and a long pool in the evening sun.', at: .76, l: 'Hus Fjordlys', v: '212 m²' }
+    { t: 'Walls', c: 'The rooms rise straight out of the drawing.', at: .06, l: 'Ceiling height', v: '2.90 m' },
+    { t: 'Roof', c: 'One flat roof over the whole plan, a light box on top.', at: .18, l: 'Roof', v: 'Flat, 1.2 m overhang' },
+    { t: 'Site', c: 'Cedar on the walls, set into a clearing in the forest.', at: .3, l: 'Site', v: 'Telemark' },
+    { t: 'Terrace', c: 'Sliding glass opens the living room onto the pool.', at: .5, l: 'Pool', v: '12 × 3 m' },
+    { t: 'Inside', c: 'Living, dining and kitchen under one oak ceiling, then the bedroom.', at: .6, l: 'Inside', v: 'Living',
+      rooms: [[.6, 'Living'], [.76, 'Dining and kitchen'], [.88, 'Bedroom']] }
   ];
   var sec = null, started = false;
 
@@ -1252,7 +1258,7 @@ html.t3-on .framer-1a9wq7r-container{opacity:0!important}
       sec.setAttribute('aria-label', 'From plan to house');
       sec.innerHTML = '<div class="t3-block"><div class="t3-stick"><video class="t3-film" muted playsinline preload="none" aria-hidden="true"></video><div class="t3-scrim"></div>' +
         '<div class="t3-head"><small>Hus Fjordlys · Telemark</small><h2>Before the first stone.</h2>' +
-          '<p>Scroll through one of our houses, from the drawing we hand the builder to the evening it is lived in.</p></div>' +
+          '<p>Scroll through one of our houses, from the drawing we hand the builder to the rooms you will live in.</p></div>' +
         '<ol class="t3-steps">' + STAGES.map(function(s, i){
           return '<li' + (i ? '' : ' class="on"') + '><div class="t3-top"><small>0' + (i + 1) + '</small><b>' + s.t + '</b></div><p>' + s.c + '</p></li>';
         }).join('') + '</ol>' +
@@ -1304,11 +1310,11 @@ html.t3-on .framer-1a9wq7r-container{opacity:0!important}
       if (Math.abs(goal - shown) < .002) shown = goal;
       if (film.readyState >= 1 && !film.seeking && Math.abs(film.currentTime - Math.max(.04, shown)) > .01) film.currentTime = Math.max(.04, shown);
       var st = 0; STAGES.forEach(function(s, i){ if (prog >= s.at) st = i; });
-      if (st !== stage) {
-        stage = st; steps.forEach(function(el, k){ el.classList.toggle('on', k === st); });
-        readL.textContent = STAGES[st].l; readV.textContent = STAGES[st].v;
-      }
-      sec.classList.toggle('t3-dark', prog > .5);
+      var v = STAGES[st].v; (STAGES[st].rooms || []).forEach(function(r){ if (prog >= r[0]) v = r[1]; });
+      if (st !== stage) { stage = st; steps.forEach(function(el, k){ el.classList.toggle('on', k === st); }); readL.textContent = STAGES[st].l; }
+      if (readV.textContent !== v) readV.textContent = v;
+      sec.classList.toggle('t3-in', prog > .55);
+      sec.classList.toggle('t3-dark', prog > .32);
       scrim.style.opacity = '1';
     }
     window.__t3 = { set: function(p){ forced = p; }, free: function(){ forced = null; }, ready: function(){ return film.readyState >= 2; } };
