@@ -565,9 +565,9 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
 <script>(function(){
   var DIR = 'neiden-architecture-assets/';
   // the film runs backwards: from the finished site in the sky down to the plan on the desk
-  var STAGES = [[19, '01', 'The site'], [6.6, '02', 'Inside'], [1.6, '03', 'The model'], [0, '04', 'The plan']];
+  var STAGES = [[18.6, '01', 'Inside'], [6.4, '02', 'The house'], [1.4, '03', 'The model'], [0, '04', 'The plan']];
   var S_MAX = 70;           // how far the dive into the "l" zooms
-  var sec, wrap, film, mask, word, steps, items = [], dur = 31.9, target = 31.85, shown = 31.85;
+  var sec, wrap, film, mask, word, steps, items = [], dur = 30.6, target = 30.55, shown = 30.55;
 
   function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
   function small(){ return matchMedia('(max-width:809.98px)').matches; }
@@ -587,7 +587,7 @@ section[data-framer-name="Hero Section"]>.framer-ys1r5g,
     film = document.createElement('video');
     film.className = 'i-film'; film.muted = true; film.playsInline = true; film.preload = 'auto';
     film.setAttribute('muted', ''); film.setAttribute('playsinline', '');
-    film.src = DIR + (small() ? 'v-hg-hero2-m.mp4' : 'v-hg-hero2.mp4');
+    film.src = DIR + (small() ? 'v-hg-hero3-m.mp4' : 'v-hg-hero3.mp4');
     film.addEventListener('loadedmetadata', function(){
       dur = film.duration || dur; scroll(); shown = target; film.currentTime = Math.max(.04, shown);
     });
